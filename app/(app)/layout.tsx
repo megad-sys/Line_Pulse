@@ -1,0 +1,27 @@
+import { redirect } from "next/navigation";
+import Nav from "@/components/nav";
+import { createClient } from "@/lib/supabase/server";
+import { initials } from "@/lib/utils";
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", user.id)
+    .single();
+
+  const userName = profile?.full_name ?? user.email ?? "User";
+  const userInitials = initials(userName);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Nav userName={userName} userInitials={userInitials} />
+      <main className="flex-1">{children}</main>
+    </div>
+  );
+}

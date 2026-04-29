@@ -8,9 +8,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Cabinet Grotesk", "system-ui", "-apple-system", "sans-serif"],
+        mono: ["var(--font-ibm-plex-mono)", "IBM Plex Mono", "monospace"],
+      },
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "#F7F5F0",
+        surface: "#FFFFFF",
       },
     },
   },
