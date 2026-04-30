@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Factory } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,6 +28,25 @@ export default function LoginPage() {
     if (authError) {
       setError(authError.message);
       setLoading(false);
+    } else {
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }
+
+  async function handleTryDemo() {
+    setError("");
+    setDemoLoading(true);
+
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: "demo@factoryos.com",
+      password: "FactoryOS2026",
+    });
+
+    if (authError) {
+      setError("Demo account not available yet. Contact support.");
+      setDemoLoading(false);
     } else {
       router.push("/dashboard");
       router.refresh();
@@ -88,6 +109,24 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={handleTryDemo}
+            disabled={demoLoading || loading}
+            className="w-full border border-gray-300 text-gray-700 font-semibold py-2.5 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-60 text-sm"
+          >
+            {demoLoading ? "Loading demo…" : "Try Demo — no account needed →"}
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-500 text-center mt-5">
+          No account yet?{" "}
+          <Link href="/signup" className="text-gray-900 font-medium hover:underline">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -4,72 +4,77 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { mockInsights } from "@/lib/mock-data";
 import type { AIInsight } from "@/lib/types";
 
-export async function POST(req: NextRequest) {
-  // Verify the user is authenticated
+const SPARSE_INSIGHT: AIInsight = {
+  type: "info",
+  title: "Your AI engineer is watching",
+  detail:
+    "Scan parts through your stations to start receiving production insights. The more you scan, the smarter the analysis gets.",
+  action: "Go to New Batch to add parts",
+};
+
+export async function POST(_req: NextRequest) {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}));
-  const question: string | undefined = body.question;
-
-  // Fetch production context using service role
   const service = createServiceClient();
-  const eightHoursAgo = new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data: workOrders }, { data: scans }] = await Promise.all([
+  const [{ data: parts }, { data: scans }] = await Promise.all([
     service
-      .from("work_orders")
-      .select("wo_number, customer_name, part_number, planned_qty, actual_qty, status, due_date, stations")
-      .or(`status.in.(wip,qc,delayed)`)
-      .limit(20),
+      .from("parts")
+      .select("id, batch_ref, current_status, current_station, line_id, created_at")
+      .limit(100),
     service
       .from("scans")
-      .select("station_name, status, scanned_at, operator_name")
-      .gte("scanned_at", eightHoursAgo)
+      .select("part_id, station_name, status, scanned_at, operator_name")
+      .gte("scanned_at", since24h)
       .limit(200),
   ]);
 
-  const hasData = (workOrders?.length ?? 0) > 0 || (scans?.length ?? 0) > 0;
-
-  if (!hasData && !question) {
-    return NextResponse.json({ insights: mockInsights });
-  }
-
   const groqApiKey = process.env.GROQ_API_KEY;
-  if (!groqApiKey) {
-    return NextResponse.json({ insights: mockInsights });
+  if (!groqApiKey) return NextResponse.json({ insights: mockInsights });
+
+  const hasParts = (parts?.length ?? 0) > 0;
+  const hasScans = (scans?.length ?? 0) > 0;
+
+  if (!hasParts && !hasScans) {
+    return NextResponse.json({ insights: [SPARSE_INSIGHT] });
   }
+
+  const statusCounts = (parts ?? []).reduce<Record<string, number>>((acc, p) => {
+    acc[p.current_status] = (acc[p.current_status] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const stationCounts = (parts ?? []).reduce<Record<string, number>>((acc, p) => {
+    if (p.current_status === "wip") acc[p.current_station] = (acc[p.current_station] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const failedScansToday = (scans ?? []).filter((s) => s.status === "failed_qc").length;
+  const completedScansToday = (scans ?? []).filter((s) => s.status === "completed").length;
 
   const productionContext = {
-    active_work_orders: workOrders ?? [],
-    recent_scans_last_8h: (scans ?? []).length,
-    qc_failures: (scans ?? []).filter((s) => s.status === "failed_qc").length,
-    stations_active: Array.from(new Set((scans ?? []).map((s) => s.station_name))),
-    question: question ?? null,
+    part_status_counts: statusCounts,
+    wip_parts_per_station: stationCounts,
+    total_parts: parts?.length ?? 0,
+    scans_last_24h: scans?.length ?? 0,
+    failed_qc_last_24h: failedScansToday,
+    completed_last_24h: completedScansToday,
   };
 
-  const systemPrompt = `You are a factory operations AI assistant for a manufacturing facility.
-Analyze production data and return actionable insights in JSON format.
-Be specific, concise, and focus on what managers can act on right now.
-Always respond with valid JSON only — no markdown, no explanation outside JSON.`;
+  const systemPrompt = `You are an AI production engineer watching a factory floor. Analyse this data and return 3-5 insights as a JSON object with key "insights" containing an array:
+{"insights": [{type, title, detail, action}]}
+type: critical|warning|info|positive
+Focus on: bottleneck stations, parts piling up, high failure rates, throughput issues, positive signals worth noting.
+Be specific with numbers from the data.
+Return ONLY valid JSON. No markdown.`;
 
-  const userPrompt = question
-    ? `Answer this question about the production floor based on the data: "${question}"
-
-Production data: ${JSON.stringify(productionContext, null, 2)}
-
-Return a JSON array of 1-3 insights: [{"type": "critical"|"warning"|"info"|"positive", "title": "short title", "body": "detailed finding", "time": "just now"}]`
-    : `Analyze this production data and identify the most important issues and opportunities:
-
-${JSON.stringify(productionContext, null, 2)}
-
-Return a JSON array of 3-5 insights: [{"type": "critical"|"warning"|"info"|"positive", "title": "short title under 60 chars", "body": "2-3 sentence finding with specific numbers", "time": "X min ago"}]`;
+  const userPrompt = `Production data:\n${JSON.stringify(productionContext, null, 2)}\n\nGenerate 3-5 insights.`;
 
   try {
     const groq = new Groq({ apiKey: groqApiKey });
@@ -92,7 +97,7 @@ Return a JSON array of 3-5 insights: [{"type": "critical"|"warning"|"info"|"posi
       ? parsed
       : Array.isArray(parsed.insights)
       ? parsed.insights
-      : mockInsights;
+      : [SPARSE_INSIGHT];
 
     return NextResponse.json({ insights });
   } catch {
