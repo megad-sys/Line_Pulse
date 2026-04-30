@@ -9,18 +9,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .single();
+  const [
+    { data: profile },
+    { count: linesCount },
+  ] = await Promise.all([
+    supabase.from("profiles").select("full_name").eq("id", user.id).single(),
+    supabase.from("production_lines").select("*", { count: "exact", head: true }),
+  ]);
 
   const userName = profile?.full_name ?? user.email ?? "User";
   const userInitials = initials(userName);
+  const isDemo = (linesCount ?? 0) === 0;
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Nav userName={userName} userInitials={userInitials} />
+      <Nav userName={userName} userInitials={userInitials} isDemo={isDemo} />
       <main className="flex-1">{children}</main>
     </div>
   );

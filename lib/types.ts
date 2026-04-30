@@ -1,6 +1,13 @@
 export type WorkOrderStatus = "planned" | "wip" | "qc" | "done" | "delayed";
 export type Priority = "low" | "medium" | "high" | "urgent";
 export type InsightType = "critical" | "warning" | "info" | "positive";
+
+export interface PartKPIs {
+  partsInProduction: number;
+  releasedToday: number;
+  reworkFailed: number;
+  activeLines: number;
+}
 export type ScanStatus = "started" | "completed" | "failed_qc";
 
 export interface WorkOrder {
@@ -38,8 +45,11 @@ export interface Station {
 export interface AIInsight {
   type: InsightType;
   title: string;
-  body: string;
-  time: string;
+  detail: string;
+  action?: string;
+  /** @deprecated kept for mock data backwards compat */
+  body?: string;
+  time?: string;
 }
 
 export interface KPIs {

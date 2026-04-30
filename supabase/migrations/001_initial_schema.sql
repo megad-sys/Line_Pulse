@@ -1,6 +1,7 @@
 -- ============================================================
 -- FactoryOS — Initial Schema
 -- Paste this into the Supabase SQL Editor and run it.
+-- Safe to re-run: uses IF NOT EXISTS and DROP POLICY IF EXISTS.
 -- ============================================================
 
 -- ── Tenants ──────────────────────────────────────────────────
@@ -97,7 +98,7 @@ CREATE TABLE IF NOT EXISTS shifts_config (
 CREATE TABLE IF NOT EXISTS scans (
   id               uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id        uuid        NOT NULL REFERENCES tenants ON DELETE CASCADE,
-  work_order_id    uuid        NOT NULL REFERENCES work_orders ON DELETE CASCADE,
+  work_order_id    uuid        REFERENCES work_orders ON DELETE CASCADE,
   serial_number    text,
   station_name     text        NOT NULL,
   status           text        NOT NULL
@@ -141,7 +142,6 @@ CREATE INDEX IF NOT EXISTS idx_ncrs_tenant_status ON ncrs (tenant_id, status);
 -- Row Level Security
 -- ============================================================
 
--- Helper function: returns the tenant_id for the current user
 CREATE OR REPLACE FUNCTION get_user_tenant_id()
 RETURNS uuid LANGUAGE sql SECURITY DEFINER STABLE AS $$
   SELECT tenant_id FROM profiles WHERE id = auth.uid()
@@ -149,45 +149,42 @@ $$;
 
 -- tenants
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON tenants;
 CREATE POLICY "tenant_isolation" ON tenants
   FOR ALL USING (id = get_user_tenant_id());
 
 -- profiles
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON profiles;
 CREATE POLICY "tenant_isolation" ON profiles
   FOR ALL USING (tenant_id = get_user_tenant_id());
 
 -- stations_config
 ALTER TABLE stations_config ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON stations_config;
 CREATE POLICY "tenant_isolation" ON stations_config
   FOR ALL USING (tenant_id = get_user_tenant_id());
 
 -- work_orders
 ALTER TABLE work_orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON work_orders;
 CREATE POLICY "tenant_isolation" ON work_orders
   FOR ALL USING (tenant_id = get_user_tenant_id());
 
 -- shifts_config
 ALTER TABLE shifts_config ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON shifts_config;
 CREATE POLICY "tenant_isolation" ON shifts_config
   FOR ALL USING (tenant_id = get_user_tenant_id());
 
--- scans: authenticated users see their tenant's scans
+-- scans
 ALTER TABLE scans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON scans;
 CREATE POLICY "tenant_isolation" ON scans
   FOR ALL USING (tenant_id = get_user_tenant_id());
 
 -- ncrs
 ALTER TABLE ncrs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "tenant_isolation" ON ncrs;
 CREATE POLICY "tenant_isolation" ON ncrs
   FOR ALL USING (tenant_id = get_user_tenant_id());
-
--- ============================================================
--- Seed: default shift config (optional — delete if not needed)
--- Replace <YOUR_TENANT_ID> with your actual tenant UUID.
--- ============================================================
-
--- INSERT INTO shifts_config (tenant_id, name, start_time, end_time) VALUES
---   ('<YOUR_TENANT_ID>', 'Morning',   '06:00', '14:00'),
---   ('<YOUR_TENANT_ID>', 'Afternoon', '14:00', '22:00'),
---   ('<YOUR_TENANT_ID>', 'Night',     '22:00', '06:00');

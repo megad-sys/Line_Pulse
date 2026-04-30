@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { mockWorkOrders } from "@/lib/mock-data";
-import DemoBanner from "@/components/demo-banner";
 import WorkOrdersClient from "./work-orders-client";
 import type { WorkOrder } from "@/lib/types";
 
@@ -35,7 +34,14 @@ export default async function WorkOrdersPage() {
       <div className="max-w-[1200px] mx-auto px-6 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Work Orders</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900">Work Orders</h1>
+              {isDemo && (
+                <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  Demo data
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-500 mt-0.5">
               {workOrders.length} total ·{" "}
               {workOrders.filter((w) => w.status !== "done" && w.status !== "planned").length} active
@@ -49,8 +55,6 @@ export default async function WorkOrdersPage() {
             New Work Order
           </Link>
         </div>
-
-        {isDemo && <DemoBanner />}
 
         <WorkOrdersClient
           workOrders={workOrders}

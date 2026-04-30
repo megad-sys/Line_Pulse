@@ -1,4 +1,4 @@
-import type { WorkOrder, Station, AIInsight, KPIs } from "./types";
+import type { WorkOrder, Station, AIInsight, KPIs, PartKPIs } from "./types";
 
 export const mockKpis: KPIs = {
   unitsProduced: 187,
@@ -8,6 +8,13 @@ export const mockKpis: KPIs = {
   avgCycleTime: 38,
   cycleTimeTarget: 32,
   activeWorkOrders: 9,
+};
+
+export const mockPartKpis: PartKPIs = {
+  partsInProduction: 33,
+  releasedToday: 47,
+  reworkFailed: 6,
+  activeLines: 1,
 };
 
 export const mockWorkOrders: WorkOrder[] = [
@@ -122,31 +129,29 @@ export const mockInsights: AIInsight[] = [
   {
     type: "critical",
     title: "Bottleneck: Visual Inspection",
-    body: "Average dwell time 14.8 min vs 6.4 min target. 11 of 14 QC failures (79%) originated here. At current throughput you will finish the shift at 211 units vs 240 planned. Assigning a second operator is the highest-impact action available.",
-    time: "2 min ago",
+    detail: "Average dwell time 14.8 min vs 6.4 min target. 23 parts are queued here right now — the longest wait on Line A. At current pace, 31 fewer units will be released this shift.",
+    action: "Assign a second operator to Visual Inspection",
   },
   {
-    type: "warning",
-    title: "WO-2024-0054 at risk of missing deadline",
-    body: "RF Amplifier Module (Eolane SysCom) is at 30% completion with a same-day deadline. Current pace projects completion at 21:40 — 3 hours after shift end.",
-    time: "8 min ago",
+    type: "critical",
+    title: "4 parts stuck in Rework",
+    detail: "4 parts have been flagged for rework with no scan activity in the last 90 minutes. If not resolved before shift end, they will roll into tomorrow's backlog.",
+    action: "Check rework queue and reassign operator",
   },
   {
     type: "warning",
     title: "QC failure rate above threshold",
-    body: "7.5% failure rate today vs 3.2% weekly average. 11 of 14 failures are concentrated at Visual Inspection — likely an operator or lighting issue, not a component defect.",
-    time: "15 min ago",
+    detail: "2 parts failed QC today vs a 0.8% weekly average. Both failures originated at Soldering — likely a temperature or flux issue, not a component defect.",
+    action: "Inspect Soldering station temperature log",
   },
   {
     type: "info",
-    title: "Plan attainment trending down",
-    body: "Last 4 shifts: 94% → 91% → 87% → 78%. The decline correlates with the Visual Inspection bottleneck growing from 8.1 min to 14.8 min average cycle time.",
-    time: "1 hr ago",
+    title: "6 parts at QC awaiting decision",
+    detail: "6 parts are sitting at QC with no action recorded. Average wait time is 47 minutes. Clearing these would immediately free capacity at downstream stations.",
   },
   {
     type: "positive",
-    title: "WO-2024-0053 completed ahead of schedule",
-    body: "Sensor Interface (CONTAG AG) — 80 units completed 2.5 hours before deadline. Packaging station performed at 4.4 min avg cycle vs 4.5 target.",
-    time: "2 hr ago",
+    title: "47 parts released — ahead of yesterday",
+    detail: "Today's release count of 47 is 12% above yesterday's equivalent shift point. SMT and Crimping stations are both running within target cycle times.",
   },
 ];

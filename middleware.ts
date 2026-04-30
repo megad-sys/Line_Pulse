@@ -40,8 +40,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Exclude: static files, images, favicon, login page, scan page (workers — no auth)
+  // Exclude: static files, images, favicon, login, signup, scan (workers — no auth)
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|login|scan|api/scan).*)",
+    "/((?!_next/static|_next/image|favicon.ico|login|signup|scan|api/scan|api/signup).*)",
   ],
 };
