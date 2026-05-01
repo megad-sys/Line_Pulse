@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ChevronDown } from "lucide-react";
+import { useDemoMode } from "@/lib/demo-context";
+import { mockStationStatus } from "@/lib/mock-data";
 import type { StationStatusResponse, StationRow } from "@/app/api/dashboard/station-status/route";
 
 // ── Status logic ───────────────────────────────────────────────
@@ -86,17 +88,23 @@ function Skeleton() {
 // ── Main component ─────────────────────────────────────────────
 
 export default function StationStatusTable() {
+  const { isDemo } = useDemoMode();
   const [data, setData]               = useState<StationStatusResponse | null>(null);
   const [loading, setLoading]         = useState(true);
   const [selectedLineId, setSelectedLineId] = useState<string>("");
 
   const fetchData = useCallback(async () => {
+    if (isDemo) {
+      setData(mockStationStatus as unknown as StationStatusResponse);
+      setSelectedLineId("mock-line-a");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/dashboard/station-status");
       if (res.ok) {
         const json: StationStatusResponse = await res.json();
         setData(json);
-        // Default to first line on initial load only
         setSelectedLineId((prev) => prev || json.lines[0]?.line_id || "");
       }
     } catch {
@@ -104,7 +112,7 @@ export default function StationStatusTable() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isDemo]);
 
   useEffect(() => {
     fetchData();

@@ -1,4 +1,4 @@
-import type { WorkOrder, Station, AIInsight, KPIs, PartKPIs } from "./types";
+import type { WorkOrder, Station, AIInsight, KPIs, PartKPIs, ManufacturingKPIs, ChartDay, Escalation } from "./types";
 
 export const mockKpis: KPIs = {
   unitsProduced: 187,
@@ -128,30 +128,118 @@ export const mockStations: Station[] = [
 export const mockInsights: AIInsight[] = [
   {
     type: "critical",
-    title: "Bottleneck: Visual Inspection",
-    detail: "Average dwell time 14.8 min vs 6.4 min target. 23 parts are queued here right now — the longest wait on Line A. At current pace, 31 fewer units will be released this shift.",
+    title: "Visual Inspection is your bottleneck",
+    detail: "14.8 min avg vs 10 min target. 3 parts currently stuck here — the longest queue on Line A. At this pace, you will produce 211 units vs 240 planned today.",
     action: "Assign a second operator to Visual Inspection",
   },
   {
-    type: "critical",
-    title: "4 parts stuck in Rework",
-    detail: "4 parts have been flagged for rework with no scan activity in the last 90 minutes. If not resolved before shift end, they will roll into tomorrow's backlog.",
-    action: "Check rework queue and reassign operator",
+    type: "warning",
+    title: "FPY dropped to 93.2%",
+    detail: "Up from 5.4% failure rate yesterday. All failures concentrated at Visual Inspection — likely a tooling or operator issue, not a component defect.",
+    action: "Inspect Visual Inspection station tooling",
   },
   {
     type: "warning",
-    title: "QC failure rate above threshold",
-    detail: "2 parts failed QC today vs a 0.8% weekly average. Both failures originated at Soldering — likely a temperature or flux issue, not a component defect.",
-    action: "Inspect Soldering station temperature log",
+    title: "At current pace: 211 units vs 240 planned",
+    detail: "The bottleneck at Visual Inspection is reducing throughput by 3.2 parts/hr. Without intervention, today's target will be missed by 29 units.",
+    action: "Re-prioritise high-priority batches upstream",
   },
   {
     type: "info",
-    title: "6 parts at QC awaiting decision",
-    detail: "6 parts are sitting at QC with no action recorded. Average wait time is 47 minutes. Clearing these would immediately free capacity at downstream stations.",
+    title: "Functional Test running 7.3 min — 4% over target",
+    detail: "Small overrun vs the 7 min target. Not yet critical but worth monitoring — if throughput at Visual Inspection improves, this could become the next constraint.",
   },
   {
     type: "positive",
-    title: "47 parts released — ahead of yesterday",
-    detail: "Today's release count of 47 is 12% above yesterday's equivalent shift point. SMT and Crimping stations are both running within target cycle times.",
+    title: "Soldering running under target all shift",
+    detail: "6.1 min avg vs 6 min target — effectively on target. Morning team performing consistently. SMT also within range at 5.2 min vs 8 min target.",
+  },
+];
+
+// ── Station status (CHANGE 5 spec) ───────────────────────────────
+
+export const mockStationStatus = {
+  lines: [
+    {
+      line_id:    "mock-line-a",
+      line_name:  "Line A — PCB Assembly",
+      total_wip:  33,
+      stations: [
+        { station_name: "SMT Assembly",     sequence_order: 0, target_mins: 8,  parts_here: 12, rework_parts: 0, completed_today: 12, avg_cycle_mins: 5.2  },
+        { station_name: "Soldering",         sequence_order: 1, target_mins: 6,  parts_here: 8,  rework_parts: 0, completed_today: 18, avg_cycle_mins: 6.1  },
+        { station_name: "Visual Inspection", sequence_order: 2, target_mins: 10, parts_here: 3,  rework_parts: 2, completed_today: 9,  avg_cycle_mins: 14.8 },
+        { station_name: "Functional Test",   sequence_order: 3, target_mins: 7,  parts_here: 6,  rework_parts: 0, completed_today: 14, avg_cycle_mins: 7.3  },
+        { station_name: "Packaging",         sequence_order: 4, target_mins: 4,  parts_here: 4,  rework_parts: 0, completed_today: 47, avg_cycle_mins: 4.4  },
+      ],
+    },
+  ],
+  isDemo: true,
+} as const;
+
+// ── Manufacturing KPIs (CHANGE 2 spec) ──────────────────────────
+
+export const mockMfgKpis: ManufacturingKPIs = {
+  oee:            71,
+  fpy:            93.2,
+  throughput:     23.4,
+  avgCycleTime:   38,
+  scrapRate:      1.2,
+  reworkRate:     4.8,
+  dpmo:           14000,
+  downtimeMins:   47,
+  totalStarted:   93,
+  targetCycleTime: 32,
+};
+
+// ── Planned vs Produced chart data (CHANGE 3 spec) ──────────────
+
+function daysAgo(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().split("T")[0];
+}
+
+function dayLabel(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toLocaleDateString("en-GB", { weekday: "short" });
+}
+
+export const mockChartData: ChartDay[] = [
+  { date: daysAgo(6), label: dayLabel(6), planned: 80, produced: 74 },
+  { date: daysAgo(5), label: dayLabel(5), planned: 80, produced: 81 },
+  { date: daysAgo(4), label: dayLabel(4), planned: 80, produced: 68 },
+  { date: daysAgo(3), label: dayLabel(3), planned: 80, produced: 77 },
+  { date: daysAgo(2), label: dayLabel(2), planned: 80, produced: 82 },
+  { date: daysAgo(1), label: dayLabel(1), planned: 40, produced: 38 },
+  { date: daysAgo(0), label: "Today",     planned: 80, produced: 33 },
+];
+
+// ── Escalations (CHANGE 4 spec) ──────────────────────────────────
+
+export const mockEscalations: Escalation[] = [
+  {
+    id: "esc-1",
+    triggered_at: new Date(Date.now() - 3.75 * 3600000).toISOString(),
+    issue_detail: "Part #QR-047 failed QC 3 times at Visual Inspection",
+    severity: "critical",
+    assigned_to: "Quality Engineer",
+    status: "notified",
+  },
+  {
+    id: "esc-2",
+    triggered_at: new Date(Date.now() - 2.46 * 3600000).toISOString(),
+    issue_detail: "Visual Inspection averaging 14.8 min — 2.3× the 10 min target",
+    severity: "warning",
+    assigned_to: "Production Manager",
+    status: "notified",
+  },
+  {
+    id: "esc-3",
+    triggered_at: new Date(Date.now() - 1.25 * 3600000).toISOString(),
+    issue_detail: "Rework rate reached 12% this shift",
+    severity: "critical",
+    assigned_to: "Quality Engineer",
+    status: "notified",
   },
 ];

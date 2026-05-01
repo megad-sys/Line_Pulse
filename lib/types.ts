@@ -86,3 +86,32 @@ export interface Profile {
   full_name: string;
   created_at: string;
 }
+
+export interface ManufacturingKPIs {
+  oee: number;
+  fpy: number;
+  throughput: number;
+  avgCycleTime: number;
+  scrapRate: number;
+  reworkRate: number;
+  dpmo: number;
+  downtimeMins: number;
+  totalStarted: number;
+  targetCycleTime: number;
+}
+
+export interface ChartDay {
+  label: string;
+  date: string;
+  planned: number;
+  produced: number;
+}
+
+export interface Escalation {
+  id: string;
+  triggered_at: string;
+  issue_detail: string;
+  severity: "critical" | "warning";
+  assigned_to: string;
+  status: "notified" | "pending";
+}
