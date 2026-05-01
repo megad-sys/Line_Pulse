@@ -2,11 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light base (auth pages) ──────────────────────────────── */
 body {
   background-color: #F7F5F0;
   color: #111827;
 }
 
+/* ── Dark theme tokens ────────────────────────────────────── */
+:root {
+  --bg:      #0f0f0e;
+  --surface: #1a1916;
+  --surface2:#222220;
+  --border:  #2e2e2b;
+  --text:    #f0ede8;
+  --muted:   #7a7870;
+  --green:   #4ade80;
+  --red:     #f87171;
+  --amber:   #fbbf24;
+  --blue:    #60a5fa;
+  --accent:  #e8ff47;
+}
+
+/* ── Base input (auth pages stay light) ───────────────────── */
 .input {
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -19,10 +36,33 @@ body {
   font-family: inherit;
 }
 
-.input:focus {
-  border-color: #9ca3af;
+.input:focus       { border-color: #9ca3af; }
+.input::placeholder { color: #9ca3af; }
+
+/* ── Dark overrides scoped to dashboard wrapper ───────────── */
+.dash .input,
+.dash input[type="text"],
+.dash input[type="number"],
+.dash select {
+  background:   #222220;
+  border-color: #2e2e2b;
+  color:        #f0ede8;
 }
 
-.input::placeholder {
-  color: #9ca3af;
+.dash .input:focus,
+.dash input[type="text"]:focus,
+.dash input[type="number"]:focus,
+.dash select:focus {
+  border-color: #7a7870;
+}
+
+.dash .input::placeholder,
+.dash input[type="text"]::placeholder,
+.dash input[type="number"]::placeholder {
+  color: #7a7870;
+}
+
+.dash select option {
+  background: #222220;
+  color:      #f0ede8;
 }

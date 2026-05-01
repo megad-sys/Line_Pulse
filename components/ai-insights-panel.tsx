@@ -123,7 +123,7 @@ export default function AIInsightsPanel() {
   }
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 text-white">
+    <div className="rounded-xl p-6" style={{ backgroundColor: "#1a1916", color: "#f0ede8" }}>
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
@@ -140,7 +140,8 @@ export default function AIInsightsPanel() {
           <button
             onClick={loadInsights}
             disabled={loading}
-            className="text-xs text-gray-400 hover:text-gray-200 transition-colors px-2 py-1 rounded border border-gray-700 hover:border-gray-500"
+            className="text-xs transition-colors px-2 py-1 rounded border"
+          style={{ color: "#7a7870", borderColor: "#2e2e2b" }}
           >
             {loading ? <Loader2 size={12} className="animate-spin" /> : "Refresh"}
           </button>

@@ -47,28 +47,31 @@ export default function EscalationCenter() {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Escalations & Notifications</h3>
+      <h3 className="text-sm font-semibold mb-3" style={{ color: "#7a7870" }}>
+        Escalations & Notifications
+      </h3>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
         {loading ? (
-          <div className="px-5 py-8 text-center text-xs text-gray-400 animate-pulse">
+          <div className="px-5 py-8 text-center text-xs animate-pulse" style={{ color: "#7a7870" }}>
             Loading escalations…
           </div>
         ) : escalations.length === 0 ? (
           <div className="px-5 py-8 text-center">
-            <p className="text-sm font-medium text-gray-500">No escalations today</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm font-medium" style={{ color: "#7a7870" }}>No escalations today</p>
+            <p className="text-xs mt-1" style={{ color: "#7a7870" }}>
               The AI engineer will flag issues here as they arise.
             </p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
+              <tr className="border-b" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
                 {["Time", "Issue", "Severity", "Sent To", "Status"].map((h) => (
                   <th
                     key={h}
-                    className="text-left text-xs font-medium text-gray-400 px-4 py-2.5 uppercase tracking-wide first:pl-5"
+                    className="text-left text-xs font-medium px-4 py-2.5 uppercase tracking-wide first:pl-5"
+                    style={{ color: "#7a7870" }}
                   >
                     {h}
                   </th>
@@ -79,16 +82,17 @@ export default function EscalationCenter() {
               {escalations.map((e, i) => (
                 <tr
                   key={e.id}
-                  className={`transition-colors hover:bg-gray-50/40 ${
-                    i < escalations.length - 1 ? "border-b border-gray-50" : ""
+                  className={`transition-colors hover:bg-[#222220] ${
+                    i < escalations.length - 1 ? "border-b" : ""
                   }`}
+                  style={i < escalations.length - 1 ? { borderColor: "#2e2e2b" } : {}}
                 >
-                  <td className="pl-5 pr-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">
+                  <td className="pl-5 pr-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "#7a7870" }}>
                     {formatTime(e.triggered_at)}
-                    <span className="block text-gray-400">{timeAgo(e.triggered_at)}</span>
+                    <span className="block" style={{ color: "#4a4a45" }}>{timeAgo(e.triggered_at)}</span>
                   </td>
 
-                  <td className="px-4 py-3 text-xs text-gray-700 max-w-xs">
+                  <td className="px-4 py-3 text-xs max-w-xs" style={{ color: "#f0ede8" }}>
                     {e.issue_detail}
                   </td>
 
@@ -96,24 +100,22 @@ export default function EscalationCenter() {
                     <span
                       className={`inline-flex text-xs font-semibold border px-2 py-0.5 rounded-full ${
                         e.severity === "critical"
-                          ? "text-red-700 bg-red-50 border-red-200"
-                          : "text-amber-700 bg-amber-50 border-amber-200"
+                          ? "text-[#f87171] bg-[#f87171]/10 border-[#f87171]/20"
+                          : "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20"
                       }`}
                     >
                       {e.severity === "critical" ? "Critical" : "Warning"}
                     </span>
                   </td>
 
-                  <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "#7a7870" }}>
                     {e.assigned_to}
                   </td>
 
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                        e.status === "notified"
-                          ? "text-green-600"
-                          : "text-amber-600"
+                        e.status === "notified" ? "text-[#4ade80]" : "text-[#fbbf24]"
                       }`}
                     >
                       {e.status === "notified" ? "Notified ✓" : "Pending"}

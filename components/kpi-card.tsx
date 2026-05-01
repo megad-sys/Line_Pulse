@@ -7,11 +7,11 @@ export interface KpiCardProps {
 }
 
 const colorMap = {
-  blue: { accent: "text-blue-600", bar: "bg-blue-500" },
-  red: { accent: "text-red-600", bar: "bg-red-500" },
-  amber: { accent: "text-amber-600", bar: "bg-amber-500" },
-  green: { accent: "text-green-600", bar: "bg-green-500" },
-  gray: { accent: "text-gray-700", bar: "bg-gray-400" },
+  blue:  { accent: "text-[#60a5fa]", bar: "bg-[#60a5fa]" },
+  red:   { accent: "text-[#f87171]", bar: "bg-[#f87171]" },
+  amber: { accent: "text-[#fbbf24]", bar: "bg-[#fbbf24]" },
+  green: { accent: "text-[#4ade80]", bar: "bg-[#4ade80]" },
+  gray:  { accent: "text-[#7a7870]", bar: "bg-[#7a7870]" },
 };
 
 export default function KpiCard({
@@ -23,12 +23,17 @@ export default function KpiCard({
 }: KpiCardProps) {
   const { accent, bar } = colorMap[color];
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 flex flex-col gap-2 shadow-sm">
-      <div className="text-xs font-medium text-gray-400 uppercase tracking-wider">{label}</div>
+    <div
+      className="rounded-xl border p-4 flex flex-col gap-2"
+      style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}
+    >
+      <div className="text-xs font-medium uppercase tracking-wider" style={{ color: "#7a7870" }}>
+        {label}
+      </div>
       <div className={`text-2xl font-bold font-mono ${accent}`}>{value}</div>
-      {sub && <div className="text-xs text-gray-400">{sub}</div>}
+      {sub && <div className="text-xs" style={{ color: "#7a7870" }}>{sub}</div>}
       {progress !== undefined && (
-        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#2e2e2b" }}>
           <div className={`h-full rounded-full ${bar}`} style={{ width: `${progress}%` }} />
         </div>
       )}
