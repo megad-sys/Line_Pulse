@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { AIInsight, InsightType } from "@/lib/types";
 import { mockInsights } from "@/lib/mock-data";
+import { useDemoMode } from "@/lib/demo-context";
 
 const CARD_CONFIG: Record<
   InsightType,
@@ -47,6 +48,7 @@ const CARD_CONFIG: Record<
 };
 
 export default function AIInsightsPanel() {
+  const { isDemo } = useDemoMode();
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [loading, setLoading] = useState(true);
   const [question, setQuestion] = useState("");
@@ -56,8 +58,14 @@ export default function AIInsightsPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (isDemo) {
+      setInsights(mockInsights);
+      setLoading(false);
+      setUpdatedAt(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+      return;
+    }
     loadInsights();
-  }, []);
+  }, [isDemo]);
 
   async function loadInsights() {
     setLoading(true);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useDemoMode } from "@/lib/demo-context";
 
 type StatusRow = {
   label: string;
@@ -52,11 +53,18 @@ function Skeleton() {
 }
 
 export default function PartStatusTable() {
+  const { isDemo: ctxDemo } = useDemoMode();
   const [rows, setRows] = useState<StatusRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
 
   const fetchData = useCallback(async () => {
+    if (ctxDemo) {
+      setIsDemo(true);
+      setRows(MOCK_ROWS);
+      setLoading(false);
+      return;
+    }
     const supabase = createClient();
 
     const todayStart = new Date();
@@ -130,7 +138,7 @@ export default function PartStatusTable() {
     fetchData();
     const interval = setInterval(fetchData, 60_000);
     return () => clearInterval(interval);
-  }, [fetchData]);
+  }, [fetchData, ctxDemo]);
 
   if (loading) return <Skeleton />;
 

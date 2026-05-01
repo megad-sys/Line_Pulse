@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Nav from "@/components/nav";
+import { DemoModeProvider } from "@/lib/demo-context";
 import { createClient } from "@/lib/supabase/server";
 import { initials } from "@/lib/utils";
 
@@ -17,14 +18,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     supabase.from("production_lines").select("*", { count: "exact", head: true }),
   ]);
 
-  const userName = profile?.full_name ?? user.email ?? "User";
+  const userName    = profile?.full_name ?? user.email ?? "User";
   const userInitials = initials(userName);
-  const isDemo = (linesCount ?? 0) === 0;
+  const defaultIsDemo = (linesCount ?? 0) === 0;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Nav userName={userName} userInitials={userInitials} isDemo={isDemo} />
-      <main className="flex-1">{children}</main>
-    </div>
+    <DemoModeProvider defaultIsDemo={defaultIsDemo}>
+      <div className="min-h-screen flex flex-col">
+        <Nav userName={userName} userInitials={userInitials} />
+        <main className="flex-1">{children}</main>
+      </div>
+    </DemoModeProvider>
   );
 }
