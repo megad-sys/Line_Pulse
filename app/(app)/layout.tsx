@@ -24,7 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <DemoModeProvider defaultIsDemo={defaultIsDemo}>
-      <div className="min-h-screen flex flex-col">
+      <div className="dash min-h-screen flex flex-col" style={{ backgroundColor: "#0f0f0e", color: "#f0ede8" }}>
         <Nav userName={userName} userInitials={userInitials} />
         <main className="flex-1">{children}</main>
       </div>

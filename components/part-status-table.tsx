@@ -7,20 +7,19 @@ import { useDemoMode } from "@/lib/demo-context";
 type StatusRow = {
   label: string;
   dbStatus: string[];
-  color: string;
-  bgColor: string;
+  pill: string;
   now: number;
   today: number;
   thisWeek: number;
 };
 
 const STATUS_DEFS: Omit<StatusRow, "now" | "today" | "thisWeek">[] = [
-  { label: "WIP",      dbStatus: ["wip"],       color: "text-blue-700",  bgColor: "bg-blue-50"  },
-  { label: "Released", dbStatus: ["done"],      color: "text-green-700", bgColor: "bg-green-50" },
-  { label: "Rework",   dbStatus: [],            color: "text-amber-700", bgColor: "bg-amber-50" },
-  { label: "At QC",    dbStatus: [],            color: "text-amber-700", bgColor: "bg-amber-50" },
-  { label: "Failed",   dbStatus: ["failed_qc"], color: "text-red-700",   bgColor: "bg-red-50"   },
-  { label: "On Hold",  dbStatus: ["scrapped"],  color: "text-gray-600",  bgColor: "bg-gray-100" },
+  { label: "WIP",      dbStatus: ["wip"],       pill: "text-[#60a5fa] bg-[#60a5fa]/10 border-[#60a5fa]/20" },
+  { label: "Released", dbStatus: ["done"],      pill: "text-[#4ade80] bg-[#4ade80]/10 border-[#4ade80]/20" },
+  { label: "Rework",   dbStatus: [],            pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20" },
+  { label: "At QC",    dbStatus: [],            pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20" },
+  { label: "Failed",   dbStatus: ["failed_qc"], pill: "text-[#f87171] bg-[#f87171]/10 border-[#f87171]/20" },
+  { label: "On Hold",  dbStatus: ["scrapped"],  pill: "text-[#7a7870] bg-[#2e2e2b] border-[#2e2e2b]"      },
 ];
 
 const MOCK_ROWS: StatusRow[] = [
@@ -34,17 +33,17 @@ const MOCK_ROWS: StatusRow[] = [
 
 function Skeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <div className="h-4 w-28 bg-gray-100 rounded" />
+    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+      <div className="px-5 py-4 border-b" style={{ borderColor: "#2e2e2b" }}>
+        <div className="h-4 w-28 rounded" style={{ backgroundColor: "#2e2e2b" }} />
       </div>
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y" style={{ borderColor: "#2e2e2b" }}>
         {[...Array(6)].map((_, i) => (
           <div key={i} className="px-5 py-3 flex gap-8">
-            <div className="h-3 w-20 bg-gray-100 rounded" />
-            <div className="h-3 w-10 bg-gray-100 rounded ml-auto" />
-            <div className="h-3 w-10 bg-gray-100 rounded" />
-            <div className="h-3 w-10 bg-gray-100 rounded" />
+            <div className="h-3 w-20 rounded" style={{ backgroundColor: "#2e2e2b" }} />
+            <div className="h-3 w-10 rounded ml-auto" style={{ backgroundColor: "#2e2e2b" }} />
+            <div className="h-3 w-10 rounded" style={{ backgroundColor: "#2e2e2b" }} />
+            <div className="h-3 w-10 rounded" style={{ backgroundColor: "#2e2e2b" }} />
           </div>
         ))}
       </div>
@@ -54,9 +53,9 @@ function Skeleton() {
 
 export default function PartStatusTable() {
   const { isDemo: ctxDemo } = useDemoMode();
-  const [rows, setRows] = useState<StatusRow[]>([]);
+  const [rows, setRows]   = useState<StatusRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDemo, setIsDemo] = useState(false);
+  const [isDemo, setIsDemo]   = useState(false);
 
   const fetchData = useCallback(async () => {
     if (ctxDemo) {
@@ -74,14 +73,8 @@ export default function PartStatusTable() {
 
     const [{ data: parts }, { data: scansToday }, { data: scansWeek }] = await Promise.all([
       supabase.from("parts").select("current_status"),
-      supabase
-        .from("scans")
-        .select("status, part_id")
-        .gte("scanned_at", todayStart.toISOString()),
-      supabase
-        .from("scans")
-        .select("status, part_id")
-        .gte("scanned_at", weekStart.toISOString()),
+      supabase.from("scans").select("status, part_id").gte("scanned_at", todayStart.toISOString()),
+      supabase.from("scans").select("status, part_id").gte("scanned_at", weekStart.toISOString()),
     ]);
 
     const totalParts = parts?.length ?? 0;
@@ -100,39 +93,22 @@ export default function PartStatusTable() {
       nowCounts[p.current_status] = (nowCounts[p.current_status] ?? 0) + 1;
     }
 
-    const failedTodayIds = new Set(
-      (scansToday ?? []).filter((s) => s.status === "failed_qc").map((s) => s.part_id)
-    );
-    const releasedTodayIds = new Set(
-      (scansToday ?? []).filter((s) => s.status === "completed").map((s) => s.part_id)
-    );
-    const failedWeekIds = new Set(
-      (scansWeek ?? []).filter((s) => s.status === "failed_qc").map((s) => s.part_id)
-    );
-    const releasedWeekIds = new Set(
-      (scansWeek ?? []).filter((s) => s.status === "completed").map((s) => s.part_id)
-    );
+    const failedTodayIds   = new Set((scansToday ?? []).filter((s) => s.status === "failed_qc").map((s) => s.part_id));
+    const releasedTodayIds = new Set((scansToday ?? []).filter((s) => s.status === "completed").map((s) => s.part_id));
+    const failedWeekIds    = new Set((scansWeek ?? []).filter((s) => s.status === "failed_qc").map((s) => s.part_id));
+    const releasedWeekIds  = new Set((scansWeek ?? []).filter((s) => s.status === "completed").map((s) => s.part_id));
 
     const built: StatusRow[] = STATUS_DEFS.map((def) => {
       const now = def.dbStatus.reduce((sum, s) => sum + (nowCounts[s] ?? 0), 0);
-
-      let today = 0;
-      let thisWeek = 0;
-
-      if (def.label === "Failed") {
-        today = failedTodayIds.size;
-        thisWeek = failedWeekIds.size;
-      } else if (def.label === "Released") {
-        today = releasedTodayIds.size;
-        thisWeek = releasedWeekIds.size;
-      }
-
+      let today = 0, thisWeek = 0;
+      if (def.label === "Failed")   { today = failedTodayIds.size;   thisWeek = failedWeekIds.size;   }
+      if (def.label === "Released") { today = releasedTodayIds.size; thisWeek = releasedWeekIds.size; }
       return { ...def, now, today, thisWeek };
     });
 
     setRows(built);
     setLoading(false);
-  }, []);
+  }, [ctxDemo]);
 
   useEffect(() => {
     fetchData();
@@ -143,17 +119,17 @@ export default function PartStatusTable() {
   if (loading) return <Skeleton />;
 
   const total = {
-    now: rows.reduce((s, r) => s + r.now, 0),
-    today: rows.reduce((s, r) => s + r.today, 0),
+    now:      rows.reduce((s, r) => s + r.now, 0),
+    today:    rows.reduce((s, r) => s + r.today, 0),
     thisWeek: rows.reduce((s, r) => s + r.thisWeek, 0),
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-900">Part Status</h2>
+    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "#2e2e2b" }}>
+        <h2 className="text-sm font-semibold" style={{ color: "#f0ede8" }}>Part Status</h2>
         {isDemo && (
-          <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full text-[#fbbf24] bg-[#fbbf24]/10 border border-[#fbbf24]/20">
             Demo data
           </span>
         )}
@@ -161,11 +137,12 @@ export default function PartStatusTable() {
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-50 bg-gray-50/50">
+          <tr className="border-b" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
             {["Status", "Now", "Today", "This Week"].map((h) => (
               <th
                 key={h}
-                className="text-left text-xs font-medium text-gray-400 px-4 py-2.5 uppercase tracking-wide first:pl-5"
+                className="text-left text-xs font-medium px-4 py-2.5 uppercase tracking-wide first:pl-5"
+                style={{ color: "#7a7870" }}
               >
                 {h}
               </th>
@@ -177,34 +154,33 @@ export default function PartStatusTable() {
           {rows.map((row, i) => (
             <tr
               key={row.label}
-              className={`transition-colors hover:bg-gray-50/50 ${
-                i < rows.length - 1 ? "border-b border-gray-50" : ""
-              }`}
+              className={`transition-colors hover:bg-[#222220] ${i < rows.length - 1 ? "border-b" : ""}`}
+              style={i < rows.length - 1 ? { borderColor: "#2e2e2b" } : {}}
             >
               <td className="pl-5 pr-4 py-3">
-                <span className={`inline-flex text-xs font-semibold border border-gray-200 px-2 py-0.5 rounded-full ${row.color} ${row.bgColor}`}>
+                <span className={`inline-flex text-xs font-semibold border px-2 py-0.5 rounded-full ${row.pill}`}>
                   {row.label}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm font-bold text-gray-800">
-                {row.now > 0 ? row.now : <span className="text-gray-300">—</span>}
+              <td className="px-4 py-3 text-sm font-bold" style={{ color: "#f0ede8" }}>
+                {row.now > 0 ? row.now : <span style={{ color: "#2e2e2b" }}>—</span>}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">
-                {row.today > 0 ? row.today : <span className="text-gray-300">—</span>}
+              <td className="px-4 py-3 text-sm" style={{ color: "#7a7870" }}>
+                {row.today > 0 ? row.today : <span style={{ color: "#2e2e2b" }}>—</span>}
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">
-                {row.thisWeek > 0 ? row.thisWeek : <span className="text-gray-300">—</span>}
+              <td className="px-4 py-3 text-sm" style={{ color: "#7a7870" }}>
+                {row.thisWeek > 0 ? row.thisWeek : <span style={{ color: "#2e2e2b" }}>—</span>}
               </td>
             </tr>
           ))}
         </tbody>
 
         <tfoot>
-          <tr className="border-t border-gray-100 bg-gray-50/50">
-            <td className="pl-5 pr-4 py-2.5 text-xs font-semibold text-gray-500">Total</td>
-            <td className="px-4 py-2.5 text-xs font-bold text-gray-700">{total.now}</td>
-            <td className="px-4 py-2.5 text-xs font-bold text-gray-700">{total.today || "—"}</td>
-            <td className="px-4 py-2.5 text-xs font-bold text-gray-700">{total.thisWeek || "—"}</td>
+          <tr className="border-t" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+            <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "#7a7870" }}>Total</td>
+            <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>{total.now}</td>
+            <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>{total.today || "—"}</td>
+            <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>{total.thisWeek || "—"}</td>
           </tr>
         </tfoot>
       </table>

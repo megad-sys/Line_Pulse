@@ -22,9 +22,12 @@ export default function Nav({
   const { isDemo, toggle } = useDemoMode();
 
   return (
-    <nav className="bg-gray-900 text-white h-14 flex items-center px-6 gap-8 shrink-0">
-      <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
-        <Factory size={20} className="text-amber-400" />
+    <nav
+      className="h-14 flex items-center px-6 gap-8 shrink-0 border-b"
+      style={{ backgroundColor: "#0f0f0e", borderColor: "#2e2e2b" }}
+    >
+      <div className="flex items-center gap-2 font-bold text-lg tracking-tight" style={{ color: "#f0ede8" }}>
+        <Factory size={20} style={{ color: "#e8ff47" }} />
         <span>FactoryOS</span>
       </div>
 
@@ -39,8 +42,8 @@ export default function Nav({
               href={link.href}
               className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 active
-                  ? "bg-white/10 text-white"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                  ? "text-[#f0ede8] bg-[#222220]"
+                  : "text-[#7a7870] hover:text-[#f0ede8] hover:bg-[#222220]"
               }`}
             >
               {link.label}
@@ -50,22 +53,22 @@ export default function Nav({
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Demo toggle */}
         <button
           onClick={toggle}
           className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
             isDemo
-              ? "text-amber-400 bg-amber-400/10 border-amber-400/20 hover:bg-amber-400/20"
-              : "text-gray-400 bg-transparent border-gray-600 hover:border-gray-400 hover:text-gray-200"
+              ? "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20 hover:bg-[#fbbf24]/20"
+              : "text-[#7a7870] bg-transparent border-[#2e2e2b] hover:border-[#7a7870] hover:text-[#f0ede8]"
           }`}
         >
           {isDemo ? "Demo Mode" : "Live Data"}
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-300">{userName}</span>
+          <span className="text-sm" style={{ color: "#f0ede8" }}>{userName}</span>
           <div
-            className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+            style={{ backgroundColor: "#3730a3", color: "#f0ede8" }}
             title={userName}
           >
             {userInitials}
