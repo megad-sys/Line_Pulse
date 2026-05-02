@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Trash2,
 } from "lucide-react";
+import { apiPublicFetch } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ export default function ScanPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    fetch(`/api/scan/${params.id}`)
+    apiPublicFetch(`/api/scan/${params.id}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) { setError(d.error); return; }
@@ -154,7 +155,7 @@ export default function ScanPage({ params }: { params: { id: string } }) {
     }
 
     // Live mode: write to DB
-    const res = await fetch(`/api/scan/${params.id}`, {
+    const res = await apiPublicFetch(`/api/scan/${params.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

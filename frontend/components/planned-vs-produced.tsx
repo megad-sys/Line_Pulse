@@ -8,6 +8,7 @@ import {
 import { useDemoMode } from "@/lib/demo-context";
 import { mockChartData } from "@/lib/mock-data";
 import type { ChartDay } from "@/lib/types";
+import { apiFetch } from "@/lib/api";
 
 export default function PlannedVsProduced() {
   const { isDemo } = useDemoMode();
@@ -25,7 +26,7 @@ export default function PlannedVsProduced() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/daily-targets");
+      const res = await apiFetch("/api/daily-targets");
       if (res.ok) {
         const json = await res.json();
         setDays(json.days ?? []);
@@ -48,7 +49,7 @@ export default function PlannedVsProduced() {
     setSaving(true);
     try {
       const today = new Date().toISOString().split("T")[0];
-      await fetch("/api/daily-targets", {
+      await apiFetch("/api/daily-targets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ date: today, target_qty: qty }),

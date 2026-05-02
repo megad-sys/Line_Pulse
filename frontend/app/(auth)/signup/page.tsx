@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Factory } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { apiPublicFetch } from "@/lib/api";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function SignupPage() {
     }
 
     // 2. Create tenant + profile via server route (needs service role to bypass RLS)
-    const res = await fetch("/api/signup", {
+    const res = await apiPublicFetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

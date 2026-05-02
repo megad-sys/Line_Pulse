@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, GripVertical, Trash2, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { apiPublicFetch } from "@/lib/api";
 
 type Line = {
   id: string;
@@ -124,7 +125,7 @@ export default function LinesPage() {
     setSetupError("");
     setSettingUp(true);
 
-    const res = await fetch("/api/signup", {
+    const res = await apiPublicFetch("/api/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: setupUserId, factoryName: setupFactoryName.trim(), fullName: setupUserName }),
