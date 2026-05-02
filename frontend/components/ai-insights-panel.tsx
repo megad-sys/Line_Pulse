@@ -12,6 +12,7 @@ import {
 import type { AIInsight, InsightType } from "@/lib/types";
 import { mockInsights } from "@/lib/mock-data";
 import { useDemoMode } from "@/lib/demo-context";
+import { apiFetch } from "@/lib/api";
 
 const CARD_CONFIG: Record<
   InsightType,
@@ -70,7 +71,7 @@ export default function AIInsightsPanel() {
   async function loadInsights() {
     setLoading(true);
     try {
-      const res = await fetch("/api/insights", {
+      const res = await apiFetch("/api/insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -94,7 +95,7 @@ export default function AIInsightsPanel() {
     setIsStreaming(true);
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await apiFetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q }),

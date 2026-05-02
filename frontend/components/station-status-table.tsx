@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockStationStatus } from "@/lib/mock-data";
 import type { StationStatusResponse, StationRow } from "@/app/api/dashboard/station-status/route";
+import { apiFetch } from "@/lib/api";
 
 type StationStatus = "WIP" | "Released" | "Rework" | "On Hold";
 
@@ -85,7 +86,7 @@ export default function StationStatusTable() {
       return;
     }
     try {
-      const res = await fetch("/api/dashboard/station-status");
+      const res = await apiFetch("/api/dashboard/station-status");
       if (res.ok) {
         const json: StationStatusResponse = await res.json();
         setData(json);
