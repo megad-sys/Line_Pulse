@@ -115,7 +115,7 @@ export default function NewBatchPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#0f0f0e" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#1a1916" }}>
         <Loader2 size={20} className="animate-spin" style={{ color: "#7a7870" }} />
       </div>
     );
@@ -146,7 +146,7 @@ export default function NewBatchPage() {
           }
         `}</style>
 
-        <div className="min-h-screen" style={{ backgroundColor: "#0f0f0e" }}>
+        <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
           <div className="max-w-[1200px] mx-auto px-6 py-6">
 
             <div className="no-print flex items-start justify-between mb-6">
@@ -169,7 +169,7 @@ export default function NewBatchPage() {
                 <button
                   onClick={handleReset}
                   className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                  style={{ color: "#f0ede8", backgroundColor: "#222220", border: "1px solid #2e2e2b" }}
+                  style={{ color: "#f0ede8", backgroundColor: "#2e2e2b", border: "1px solid #3a3a35" }}
                 >
                   <RotateCcw size={14} />
                   New Batch
@@ -189,7 +189,7 @@ export default function NewBatchPage() {
                 <div
                   key={part.id}
                   className="qr-card rounded-xl border p-3.5 flex flex-col items-center gap-2"
-                  style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}
+                  style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}
                 >
                   <div className="w-full flex items-center gap-1 mb-0.5">
                     <Factory size={10} style={{ color: "#7a7870" }} className="shrink-0" />
@@ -203,7 +203,7 @@ export default function NewBatchPage() {
                     size={100}
                     level="M"
                     includeMargin={false}
-                    bgColor="#1a1916"
+                    bgColor="#222220"
                     fgColor="#f0ede8"
                   />
 
@@ -228,7 +228,7 @@ export default function NewBatchPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0f0f0e" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
       <div className="max-w-[520px] mx-auto px-6 py-6">
         <div className="mb-6">
           <h1 className="text-xl font-bold" style={{ color: "#f0ede8" }}>New Batch</h1>
@@ -237,7 +237,7 @@ export default function NewBatchPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border p-6" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             <div>
@@ -269,7 +269,7 @@ export default function NewBatchPage() {
             </div>
 
             {firstStation && (
-              <div className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm" style={{ backgroundColor: "#222220" }}>
+              <div className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm" style={{ backgroundColor: "#2e2e2b" }}>
                 <span style={{ color: "#7a7870" }}>Parts start at</span>
                 <span className="font-semibold" style={{ color: "#f0ede8" }}>{firstStation}</span>
               </div>

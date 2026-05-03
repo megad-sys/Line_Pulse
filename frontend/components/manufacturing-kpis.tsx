@@ -32,14 +32,14 @@ function MfgCard({
 }) {
   const s = COLOR_STYLES[color];
   return (
-    <div className="rounded-xl border p-4" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+    <div className="rounded-xl border p-4" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
       <p className="text-xs font-medium mb-2" style={{ color: "#7a7870" }}>{title}</p>
       <p className={`text-2xl font-extrabold mb-1 leading-none ${s.num}`}>{value}</p>
       {context && (
         <p className="text-xs font-semibold mb-2" style={{ color: "#7a7870" }}>{context}</p>
       )}
       {barPct !== undefined && (
-        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ backgroundColor: "#2e2e2b" }}>
+        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ backgroundColor: "#3a3a35" }}>
           <div
             className={`h-full rounded-full ${s.bar} transition-all`}
             style={{ width: `${Math.min(100, barPct)}%` }}
@@ -55,11 +55,11 @@ function Skeleton() {
   return (
     <div className="grid grid-cols-4 gap-4">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="rounded-xl border p-4 animate-pulse" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
-          <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: "#2e2e2b" }} />
-          <div className="h-7 w-16 rounded mb-2" style={{ backgroundColor: "#2e2e2b" }} />
-          <div className="h-1.5 rounded-full mb-2" style={{ backgroundColor: "#2e2e2b" }} />
-          <div className="h-3 w-32 rounded" style={{ backgroundColor: "#2e2e2b" }} />
+        <div key={i} className="rounded-xl border p-4 animate-pulse" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+          <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: "#3a3a35" }} />
+          <div className="h-7 w-16 rounded mb-2" style={{ backgroundColor: "#3a3a35" }} />
+          <div className="h-1.5 rounded-full mb-2" style={{ backgroundColor: "#3a3a35" }} />
+          <div className="h-3 w-32 rounded" style={{ backgroundColor: "#3a3a35" }} />
         </div>
       ))}
     </div>

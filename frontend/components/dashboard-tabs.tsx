@@ -74,7 +74,7 @@ export default function DashboardTabs({
                 <Link
                   href="/dashboard/settings/lines"
                   className="shrink-0 ml-6 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-                  style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}
+                  style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
                 >
                   Set Up Lines →
                 </Link>
@@ -95,7 +95,7 @@ export default function DashboardTabs({
                 <Link
                   href="/dashboard/parts/new"
                   className="shrink-0 ml-6 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-                  style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}
+                  style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
                 >
                   New Batch →
                 </Link>
@@ -133,8 +133,8 @@ export default function DashboardTabs({
         style={{
           width: 64,
           minHeight: "calc(100vh - 3.5rem)",
-          backgroundColor: "#1a1916",
-          borderColor: "#2e2e2b",
+          backgroundColor: "#222220",
+          borderColor: "#3a3a35",
         }}
       >
         {TABS.map((tab) => {
@@ -146,9 +146,9 @@ export default function DashboardTabs({
               title={tab.label}
               className="flex flex-col items-center gap-1.5 px-2 py-4 w-full transition-colors relative"
               style={{
-                backgroundColor: active ? "#222220" : "transparent",
-                borderLeft: active ? "2px solid #e8ff47" : "2px solid transparent",
-                color: active ? "#e8ff47" : "#7a7870",
+                backgroundColor: active ? "#2e2e2b" : "transparent",
+                borderLeft: active ? "2px solid #60a5fa" : "2px solid transparent",
+                color: active ? "#60a5fa" : "#7a7870",
               }}
             >
               {tab.icon}

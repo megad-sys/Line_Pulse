@@ -20,7 +20,7 @@ const STATUS_STYLES: Record<StationStatus, string> = {
   "WIP":      "text-[#60a5fa] bg-[#60a5fa]/10 border-[#60a5fa]/20",
   "Released": "text-[#4ade80] bg-[#4ade80]/10 border-[#4ade80]/20",
   "Rework":   "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20",
-  "On Hold":  "text-[#7a7870] bg-[#2e2e2b] border-[#2e2e2b]",
+  "On Hold":  "text-[#7a7870] bg-[#3a3a35] border-[#3a3a35]",
 };
 
 function vsTarget(avg: number | null, target: number) {
@@ -39,12 +39,12 @@ function MiniBar({ row }: { row: StationRow }) {
   const fillColor =
     status === "Released" ? "bg-[#4ade80]" :
     status === "Rework"   ? "bg-[#fbbf24]" :
-    status === "On Hold"  ? "bg-[#2e2e2b]"  :
+    status === "On Hold"  ? "bg-[#3a3a35]"  :
     "bg-[#60a5fa]";
 
   return (
     <div className="flex items-center gap-2 min-w-[100px]">
-      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#2e2e2b" }}>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#3a3a35" }}>
         <div className={`h-full rounded-full transition-all ${fillColor}`} style={{ width: `${pct}%` }} />
       </div>
       <span className="text-xs font-mono w-8 text-right shrink-0" style={{ color: "#7a7870" }}>{pct}%</span>
@@ -54,16 +54,16 @@ function MiniBar({ row }: { row: StationRow }) {
 
 function Skeleton() {
   return (
-    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
-      <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: "#2e2e2b" }}>
-        <div className="h-4 w-40 rounded" style={{ backgroundColor: "#2e2e2b" }} />
-        <div className="h-4 w-4 rounded" style={{ backgroundColor: "#2e2e2b" }} />
+    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+      <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: "#3a3a35" }}>
+        <div className="h-4 w-40 rounded" style={{ backgroundColor: "#3a3a35" }} />
+        <div className="h-4 w-4 rounded" style={{ backgroundColor: "#3a3a35" }} />
       </div>
-      <div className="divide-y" style={{ borderColor: "#2e2e2b" }}>
+      <div className="divide-y" style={{ borderColor: "#3a3a35" }}>
         {[...Array(4)].map((_, i) => (
           <div key={i} className="px-5 py-3 flex gap-6">
             {[28, 16, 10, 24, 12, 20].map((w, j) => (
-              <div key={j} className={`h-3 w-${w} rounded`} style={{ backgroundColor: "#2e2e2b" }} />
+              <div key={j} className={`h-3 w-${w} rounded`} style={{ backgroundColor: "#3a3a35" }} />
             ))}
           </div>
         ))}
@@ -109,10 +109,10 @@ export default function StationStatusTable() {
   const activeLine = data.lines.find((l) => l.line_id === selectedLineId) ?? data.lines[0];
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
 
       {/* Header */}
-      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "#2e2e2b" }}>
+      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "#3a3a35" }}>
         <div className="flex items-center gap-3">
           {data.lines.length > 1 ? (
             <div className="relative flex items-center">
@@ -145,7 +145,7 @@ export default function StationStatusTable() {
       {/* Table */}
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+          <tr className="border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
             {["Station", "Status", "Parts Here", "Progress", "Avg Cycle", "vs Target"].map((h) => (
               <th
                 key={h}
@@ -166,10 +166,10 @@ export default function StationStatusTable() {
             return (
               <tr
                 key={station.station_name}
-                className={`transition-colors hover:bg-[#222220] ${
+                className={`transition-colors hover:bg-[#2e2e2b] ${
                   i < activeLine.stations.length - 1 ? "border-b" : ""
                 }`}
-                style={i < activeLine.stations.length - 1 ? { borderColor: "#2e2e2b" } : {}}
+                style={i < activeLine.stations.length - 1 ? { borderColor: "#3a3a35" } : {}}
               >
                 <td className="pl-5 pr-4 py-3 font-medium whitespace-nowrap" style={{ color: "#f0ede8" }}>
                   {station.station_name}
@@ -187,7 +187,7 @@ export default function StationStatusTable() {
                       {station.parts_here}
                     </span>
                   ) : (
-                    <span className="text-xs" style={{ color: "#2e2e2b" }}>—</span>
+                    <span className="text-xs" style={{ color: "#3a3a35" }}>—</span>
                   )}
                 </td>
 
@@ -198,7 +198,7 @@ export default function StationStatusTable() {
                 <td className="px-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "#7a7870" }}>
                   {station.avg_cycle_mins !== null
                     ? `${station.avg_cycle_mins}m`
-                    : <span style={{ color: "#2e2e2b" }}>—</span>}
+                    : <span style={{ color: "#3a3a35" }}>—</span>}
                 </td>
 
                 <td className="px-4 py-3">
@@ -222,7 +222,7 @@ export default function StationStatusTable() {
         </tbody>
 
         <tfoot>
-          <tr className="border-t" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+          <tr className="border-t" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
             <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "#7a7870" }}>Total in progress</td>
             <td />
             <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>

@@ -242,14 +242,14 @@ export default function LinesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#0f0f0e" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#1a1916" }}>
         <Loader2 size={20} className="animate-spin" style={{ color: "#7a7870" }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0f0f0e" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
       <div className="max-w-[1200px] mx-auto px-6 py-6">
 
         {/* Header */}
@@ -270,7 +270,7 @@ export default function LinesPage() {
           <button
             onClick={() => { setShowAddLine(true); setLineError(""); }}
             className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-            style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}
+            style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
           >
             <Plus size={16} />
             Add Line
@@ -279,7 +279,7 @@ export default function LinesPage() {
 
         {/* Inline setup card */}
         {setupIncomplete && (
-          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "#1a1916", borderColor: "#fbbf24/30" }}>
+          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "#222220", borderColor: "#fbbf24/30" }}>
             <p className="text-sm font-semibold mb-0.5" style={{ color: "#f0ede8" }}>One more step — name your factory</p>
             <p className="text-sm mb-4" style={{ color: "#7a7870" }}>
               Your account exists but your factory workspace hasn&apos;t been created yet.
@@ -300,7 +300,7 @@ export default function LinesPage() {
                   type="submit"
                   disabled={settingUp}
                   className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
-                  style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}
+                  style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
                 >
                   {settingUp ? "Setting up..." : "Complete setup"}
                 </button>
@@ -316,7 +316,7 @@ export default function LinesPage() {
 
         {/* Add-line form */}
         {showAddLine && (
-          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
             <h2 className="text-sm font-semibold mb-4" style={{ color: "#f0ede8" }}>New production line</h2>
             <form onSubmit={handleAddLine} className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-3">
@@ -339,7 +339,7 @@ export default function LinesPage() {
               <div className="flex gap-2">
                 <button type="submit" disabled={addingLine}
                   className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
-                  style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}>
+                  style={{ backgroundColor: "#2563eb", color: "#ffffff" }}>
                   {addingLine ? "Saving..." : "Save line"}
                 </button>
                 <button type="button"
@@ -358,8 +358,8 @@ export default function LinesPage() {
 
           {/* Left — lines list */}
           <div className="w-72 shrink-0">
-            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
-              <div className="px-4 py-3 border-b" style={{ borderColor: "#2e2e2b" }}>
+            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+              <div className="px-4 py-3 border-b" style={{ borderColor: "#3a3a35" }}>
                 <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>
                   {lines.length} {lines.length === 1 ? "line" : "lines"}
                 </span>
@@ -379,10 +379,10 @@ export default function LinesPage() {
                           onClick={() => handleSelectLine(line)}
                           className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors"
                           style={{
-                            borderBottom: i < lines.length - 1 ? "1px solid #2e2e2b" : undefined,
-                            backgroundColor: active ? "#222220" : undefined,
+                            borderBottom: i < lines.length - 1 ? "1px solid #3a3a35" : undefined,
+                            backgroundColor: active ? "#2e2e2b" : undefined,
                           }}
-                          onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#222220"; }}
+                          onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#2e2e2b"; }}
                           onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.backgroundColor = ""; }}
                         >
                           <div className="flex-1 min-w-0">
@@ -395,7 +395,7 @@ export default function LinesPage() {
                               {new Date(line.created_at).toLocaleDateString("en-GB")}
                             </p>
                           </div>
-                          <ChevronRight size={14} className="shrink-0" style={{ color: active ? "#7a7870" : "#2e2e2b" }} />
+                          <ChevronRight size={14} className="shrink-0" style={{ color: active ? "#7a7870" : "#3a3a35" }} />
                         </button>
                       </li>
                     );
@@ -410,14 +410,14 @@ export default function LinesPage() {
             {!selectedLine ? (
               <div
                 className="rounded-xl border flex items-center justify-center"
-                style={{ minHeight: 200, backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}
+                style={{ minHeight: 200, backgroundColor: "#222220", borderColor: "#3a3a35" }}
               >
                 <p className="text-sm" style={{ color: "#7a7870" }}>← Select a line to view its stations</p>
               </div>
             ) : (
-              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
 
-                <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "#2e2e2b" }}>
+                <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "#3a3a35" }}>
                   <div>
                     <h2 className="font-semibold" style={{ color: "#f0ede8" }}>{selectedLine.name}</h2>
                     {selectedLine.description && (
@@ -428,7 +428,7 @@ export default function LinesPage() {
                     <button
                       onClick={() => { setShowAddStation(true); setStationError(""); }}
                       className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-                      style={{ color: "#f0ede8", backgroundColor: "#2e2e2b" }}
+                      style={{ color: "#f0ede8", backgroundColor: "#3a3a35" }}
                     >
                       <Plus size={14} />
                       Add Station
@@ -443,7 +443,7 @@ export default function LinesPage() {
                 ) : (
                   <>
                     {stations.length > 0 && (
-                      <div className="grid grid-cols-[2rem_2rem_1fr_8rem_2.5rem] gap-3 px-5 py-2 border-b" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+                      <div className="grid grid-cols-[2rem_2rem_1fr_8rem_2.5rem] gap-3 px-5 py-2 border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
                         <div />
                         <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>#</div>
                         <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>Station</div>
@@ -468,15 +468,15 @@ export default function LinesPage() {
                         onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
                         className="grid grid-cols-[2rem_2rem_1fr_8rem_2.5rem] gap-3 items-center px-5 py-3 border-b last:border-0 select-none transition-colors"
                         style={{
-                          borderColor: "#2e2e2b",
+                          borderColor: "#3a3a35",
                           backgroundColor: dragOverIndex === i && dragIndex !== i
                             ? "#60a5fa15"
-                            : dragIndex === i ? "#0f0f0e" : undefined,
+                            : dragIndex === i ? "#1a1916" : undefined,
                           opacity: dragIndex === i ? 0.4 : 1,
                         }}
                       >
                         <div className={`flex items-center justify-center ${!isDemo ? "cursor-grab active:cursor-grabbing" : ""}`}
-                          style={{ color: "#2e2e2b" }}>
+                          style={{ color: "#3a3a35" }}>
                           <GripVertical size={16} />
                         </div>
 
@@ -488,9 +488,9 @@ export default function LinesPage() {
                           onClick={() => handleDeleteStation(station.id)}
                           disabled={isDemo}
                           className="flex items-center justify-center transition-colors disabled:opacity-0"
-                          style={{ color: "#2e2e2b" }}
+                          style={{ color: "#3a3a35" }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = "#f87171")}
-                          onMouseLeave={(e) => (e.currentTarget.style.color = "#2e2e2b")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "#3a3a35")}
                           title="Delete station"
                         >
                           <Trash2 size={14} />
@@ -499,7 +499,7 @@ export default function LinesPage() {
                     ))}
 
                     {showAddStation && (
-                      <div className="px-5 py-4 border-t" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+                      <div className="px-5 py-4 border-t" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
                         <form onSubmit={handleAddStation} className="flex items-end gap-3">
                           <div className="flex-1">
                             <label className="block text-xs font-medium mb-1" style={{ color: "#f0ede8" }}>Station name *</label>
@@ -521,7 +521,7 @@ export default function LinesPage() {
                           <div className="flex gap-2 pb-px">
                             <button type="submit" disabled={addingStation}
                               className="text-sm font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-60"
-                              style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}>
+                              style={{ backgroundColor: "#2563eb", color: "#ffffff" }}>
                               {addingStation ? "Adding..." : "Add"}
                             </button>
                             <button type="button"

@@ -60,7 +60,7 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0f0f0e" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
       <div className="max-w-[1400px] mx-auto px-6 py-6">
 
         {/* Header */}

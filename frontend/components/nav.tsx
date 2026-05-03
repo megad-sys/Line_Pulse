@@ -24,7 +24,7 @@ export default function Nav({
   return (
     <nav
       className="h-14 flex items-center px-6 gap-8 shrink-0 border-b"
-      style={{ backgroundColor: "#0f0f0e", borderColor: "#2e2e2b" }}
+      style={{ backgroundColor: "#1a1916", borderColor: "#3a3a35" }}
     >
       <div className="flex items-center gap-2 font-bold text-lg tracking-tight" style={{ color: "#f0ede8" }}>
         <Factory size={20} style={{ color: "#60a5fa" }} />
@@ -42,8 +42,8 @@ export default function Nav({
               href={link.href}
               className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 active
-                  ? "text-[#f0ede8] bg-[#222220]"
-                  : "text-[#7a7870] hover:text-[#f0ede8] hover:bg-[#222220]"
+                  ? "text-[#f0ede8] bg-[#2e2e2b]"
+                  : "text-[#7a7870] hover:text-[#f0ede8] hover:bg-[#2e2e2b]"
               }`}
             >
               {link.label}
@@ -58,7 +58,7 @@ export default function Nav({
           className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
             isDemo
               ? "text-blue-400 bg-blue-400/10 border-blue-400/20 hover:bg-blue-400/20"
-              : "text-[#7a7870] bg-transparent border-[#2e2e2b] hover:border-[#7a7870] hover:text-[#f0ede8]"
+              : "text-[#7a7870] bg-transparent border-[#3a3a35] hover:border-[#7a7870] hover:text-[#f0ede8]"
           }`}
         >
           {isDemo ? "Demo Mode" : "Live Data"}

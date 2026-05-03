@@ -25,7 +25,7 @@ export default function KpiCard({
   return (
     <div
       className="rounded-xl border p-4 flex flex-col gap-2"
-      style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}
+      style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}
     >
       <div className="text-xs font-medium uppercase tracking-wider" style={{ color: "#7a7870" }}>
         {label}
@@ -33,7 +33,7 @@ export default function KpiCard({
       <div className={`text-2xl font-bold font-mono ${accent}`}>{value}</div>
       {sub && <div className="text-xs" style={{ color: "#7a7870" }}>{sub}</div>}
       {progress !== undefined && (
-        <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#2e2e2b" }}>
+        <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#3a3a35" }}>
           <div className={`h-full rounded-full ${bar}`} style={{ width: `${progress}%` }} />
         </div>
       )}

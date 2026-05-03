@@ -19,7 +19,7 @@ const STATUS_DEFS: Omit<StatusRow, "now" | "today" | "thisWeek">[] = [
   { label: "Rework",   dbStatus: [],            pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20" },
   { label: "At QC",    dbStatus: [],            pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20" },
   { label: "Failed",   dbStatus: ["failed_qc"], pill: "text-[#f87171] bg-[#f87171]/10 border-[#f87171]/20" },
-  { label: "On Hold",  dbStatus: ["scrapped"],  pill: "text-[#7a7870] bg-[#2e2e2b] border-[#2e2e2b]"      },
+  { label: "On Hold",  dbStatus: ["scrapped"],  pill: "text-[#7a7870] bg-[#3a3a35] border-[#3a3a35]"      },
 ];
 
 const MOCK_ROWS: StatusRow[] = [
@@ -33,17 +33,17 @@ const MOCK_ROWS: StatusRow[] = [
 
 function Skeleton() {
   return (
-    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
-      <div className="px-5 py-4 border-b" style={{ borderColor: "#2e2e2b" }}>
-        <div className="h-4 w-28 rounded" style={{ backgroundColor: "#2e2e2b" }} />
+    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+      <div className="px-5 py-4 border-b" style={{ borderColor: "#3a3a35" }}>
+        <div className="h-4 w-28 rounded" style={{ backgroundColor: "#3a3a35" }} />
       </div>
-      <div className="divide-y" style={{ borderColor: "#2e2e2b" }}>
+      <div className="divide-y" style={{ borderColor: "#3a3a35" }}>
         {[...Array(6)].map((_, i) => (
           <div key={i} className="px-5 py-3 flex gap-8">
-            <div className="h-3 w-20 rounded" style={{ backgroundColor: "#2e2e2b" }} />
-            <div className="h-3 w-10 rounded ml-auto" style={{ backgroundColor: "#2e2e2b" }} />
-            <div className="h-3 w-10 rounded" style={{ backgroundColor: "#2e2e2b" }} />
-            <div className="h-3 w-10 rounded" style={{ backgroundColor: "#2e2e2b" }} />
+            <div className="h-3 w-20 rounded" style={{ backgroundColor: "#3a3a35" }} />
+            <div className="h-3 w-10 rounded ml-auto" style={{ backgroundColor: "#3a3a35" }} />
+            <div className="h-3 w-10 rounded" style={{ backgroundColor: "#3a3a35" }} />
+            <div className="h-3 w-10 rounded" style={{ backgroundColor: "#3a3a35" }} />
           </div>
         ))}
       </div>
@@ -125,8 +125,8 @@ export default function PartStatusTable() {
   };
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
-      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "#2e2e2b" }}>
+    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "#3a3a35" }}>
         <h2 className="text-sm font-semibold" style={{ color: "#f0ede8" }}>Part Status</h2>
         {isDemo && (
           <span className="text-xs font-medium px-2 py-0.5 rounded-full text-[#fbbf24] bg-[#fbbf24]/10 border border-[#fbbf24]/20">
@@ -137,7 +137,7 @@ export default function PartStatusTable() {
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+          <tr className="border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
             {["Status", "Now", "Today", "This Week"].map((h) => (
               <th
                 key={h}
@@ -154,8 +154,8 @@ export default function PartStatusTable() {
           {rows.map((row, i) => (
             <tr
               key={row.label}
-              className={`transition-colors hover:bg-[#222220] ${i < rows.length - 1 ? "border-b" : ""}`}
-              style={i < rows.length - 1 ? { borderColor: "#2e2e2b" } : {}}
+              className={`transition-colors hover:bg-[#2e2e2b] ${i < rows.length - 1 ? "border-b" : ""}`}
+              style={i < rows.length - 1 ? { borderColor: "#3a3a35" } : {}}
             >
               <td className="pl-5 pr-4 py-3">
                 <span className={`inline-flex text-xs font-semibold border px-2 py-0.5 rounded-full ${row.pill}`}>
@@ -163,20 +163,20 @@ export default function PartStatusTable() {
                 </span>
               </td>
               <td className="px-4 py-3 text-sm font-bold" style={{ color: "#f0ede8" }}>
-                {row.now > 0 ? row.now : <span style={{ color: "#2e2e2b" }}>—</span>}
+                {row.now > 0 ? row.now : <span style={{ color: "#3a3a35" }}>—</span>}
               </td>
               <td className="px-4 py-3 text-sm" style={{ color: "#7a7870" }}>
-                {row.today > 0 ? row.today : <span style={{ color: "#2e2e2b" }}>—</span>}
+                {row.today > 0 ? row.today : <span style={{ color: "#3a3a35" }}>—</span>}
               </td>
               <td className="px-4 py-3 text-sm" style={{ color: "#7a7870" }}>
-                {row.thisWeek > 0 ? row.thisWeek : <span style={{ color: "#2e2e2b" }}>—</span>}
+                {row.thisWeek > 0 ? row.thisWeek : <span style={{ color: "#3a3a35" }}>—</span>}
               </td>
             </tr>
           ))}
         </tbody>
 
         <tfoot>
-          <tr className="border-t" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+          <tr className="border-t" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
             <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "#7a7870" }}>Total</td>
             <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>{total.now}</td>
             <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>{total.today || "—"}</td>

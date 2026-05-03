@@ -76,14 +76,14 @@ export default function PlannedVsProduced() {
             placeholder="e.g. 80"
             min={1}
             className="w-20 text-xs rounded-lg px-2 py-1.5 outline-none"
-            style={{ backgroundColor: "#222220", border: "1px solid #2e2e2b", color: "#f0ede8" }}
+            style={{ backgroundColor: "#2e2e2b", border: "1px solid #3a3a35", color: "#f0ede8" }}
             disabled={isDemo}
           />
           <button
             type="submit"
             disabled={saving || !target || isDemo}
             className="text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-            style={{ backgroundColor: "#e8ff47", color: "#0f0f0e", fontWeight: 600 }}
+            style={{ backgroundColor: "#2563eb", color: "#ffffff", fontWeight: 600 }}
           >
             {saving ? "Saving…" : "Set Target"}
           </button>
@@ -92,18 +92,18 @@ export default function PlannedVsProduced() {
         </form>
       </div>
 
-      <div className="rounded-xl border p-5" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+      <div className="rounded-xl border p-5" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
         {loading ? (
           <div className="h-52 flex items-center justify-center">
             <div
               className="w-8 h-8 border-2 rounded-full animate-spin"
-              style={{ borderColor: "#2e2e2b", borderTopColor: "#7a7870" }}
+              style={{ borderColor: "#3a3a35", borderTopColor: "#7a7870" }}
             />
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={days} barCategoryGap="30%" barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2e2e2b" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#3a3a35" vertical={false} />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 11, fill: "#7a7870" }}
@@ -119,11 +119,11 @@ export default function PlannedVsProduced() {
               <Tooltip
                 contentStyle={{
                   fontSize: 12, borderRadius: 8,
-                  backgroundColor: "#1a1916",
-                  border: "1px solid #2e2e2b",
+                  backgroundColor: "#222220",
+                  border: "1px solid #3a3a35",
                   color: "#f0ede8",
                 }}
-                cursor={{ fill: "#222220" }}
+                cursor={{ fill: "#2e2e2b" }}
               />
               <Legend
                 wrapperStyle={{ fontSize: 12, paddingTop: 8, color: "#7a7870" }}

@@ -51,7 +51,7 @@ export default function EscalationCenter() {
         Escalations & Notifications
       </h3>
 
-      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#1a1916", borderColor: "#2e2e2b" }}>
+      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
         {loading ? (
           <div className="px-5 py-8 text-center text-xs animate-pulse" style={{ color: "#7a7870" }}>
             Loading escalations…
@@ -66,7 +66,7 @@ export default function EscalationCenter() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b" style={{ backgroundColor: "#222220", borderColor: "#2e2e2b" }}>
+              <tr className="border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
                 {["Time", "Issue", "Severity", "Sent To", "Status"].map((h) => (
                   <th
                     key={h}
@@ -82,10 +82,10 @@ export default function EscalationCenter() {
               {escalations.map((e, i) => (
                 <tr
                   key={e.id}
-                  className={`transition-colors hover:bg-[#222220] ${
+                  className={`transition-colors hover:bg-[#2e2e2b] ${
                     i < escalations.length - 1 ? "border-b" : ""
                   }`}
-                  style={i < escalations.length - 1 ? { borderColor: "#2e2e2b" } : {}}
+                  style={i < escalations.length - 1 ? { borderColor: "#3a3a35" } : {}}
                 >
                   <td className="pl-5 pr-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "#7a7870" }}>
                     {formatTime(e.triggered_at)}
