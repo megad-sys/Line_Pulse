@@ -40,8 +40,8 @@ export default function LoginPage() {
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email: "demo@linepulse.com",
-      password: "LinePulse2026",
+      email: "demo@factoryos.com",
+      password: "FactoryOS2026",
     });
 
     if (authError) {
