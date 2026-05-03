@@ -242,28 +242,28 @@ export default function LinesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#1a1916" }}>
-        <Loader2 size={20} className="animate-spin" style={{ color: "#7a7870" }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg)" }}>
+        <Loader2 size={20} className="animate-spin" style={{ color: "var(--muted)" }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--bg)" }}>
       <div className="max-w-[1200px] mx-auto px-6 py-6">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold" style={{ color: "#f0ede8" }}>Production Lines</h1>
+              <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>Production Lines</h1>
               {isDemo && (
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full text-[#fbbf24] bg-[#fbbf24]/10 border border-[#fbbf24]/20">
                   Demo data
                 </span>
               )}
             </div>
-            <p className="text-sm mt-0.5" style={{ color: "#7a7870" }}>
+            <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>
               Configure your production lines and their station sequences
             </p>
           </div>
@@ -279,14 +279,14 @@ export default function LinesPage() {
 
         {/* Inline setup card */}
         {setupIncomplete && (
-          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "#222220", borderColor: "#fbbf24/30" }}>
-            <p className="text-sm font-semibold mb-0.5" style={{ color: "#f0ede8" }}>One more step — name your factory</p>
-            <p className="text-sm mb-4" style={{ color: "#7a7870" }}>
+          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "var(--surface)", borderColor: "#fbbf24/30" }}>
+            <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>One more step — name your factory</p>
+            <p className="text-sm mb-4" style={{ color: "var(--muted)" }}>
               Your account exists but your factory workspace hasn&apos;t been created yet.
             </p>
             <form onSubmit={handleCompleteSetup} className="flex items-end gap-3">
               <div className="flex-1">
-                <label className="block text-xs font-medium mb-1" style={{ color: "#f0ede8" }}>Factory name *</label>
+                <label className="block text-xs font-medium mb-1" style={{ color: "var(--text)" }}>Factory name *</label>
                 <input
                   type="text"
                   value={setupFactoryName}
@@ -316,17 +316,17 @@ export default function LinesPage() {
 
         {/* Add-line form */}
         {showAddLine && (
-          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
-            <h2 className="text-sm font-semibold mb-4" style={{ color: "#f0ede8" }}>New production line</h2>
+          <div className="rounded-xl border p-5 mb-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+            <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text)" }}>New production line</h2>
             <form onSubmit={handleAddLine} className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#f0ede8" }}>Line name *</label>
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text)" }}>Line name *</label>
                   <input type="text" value={lineName} onChange={(e) => setLineName(e.target.value)}
                     placeholder="e.g. Line A" required autoFocus className="input" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#f0ede8" }}>Description</label>
+                  <label className="block text-xs font-medium mb-1" style={{ color: "var(--text)" }}>Description</label>
                   <input type="text" value={lineDesc} onChange={(e) => setLineDesc(e.target.value)}
                     placeholder="e.g. PCB Assembly" className="input" />
                 </div>
@@ -345,7 +345,7 @@ export default function LinesPage() {
                 <button type="button"
                   onClick={() => { setShowAddLine(false); setLineName(""); setLineDesc(""); setLineError(""); }}
                   className="text-sm px-4 py-2 rounded-lg transition-colors"
-                  style={{ color: "#7a7870" }}>
+                  style={{ color: "var(--muted)" }}>
                   Cancel
                 </button>
               </div>
@@ -358,15 +358,15 @@ export default function LinesPage() {
 
           {/* Left — lines list */}
           <div className="w-72 shrink-0">
-            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
-              <div className="px-4 py-3 border-b" style={{ borderColor: "#3a3a35" }}>
-                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>
+            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+              <div className="px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+                <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--muted)" }}>
                   {lines.length} {lines.length === 1 ? "line" : "lines"}
                 </span>
               </div>
 
               {lines.length === 0 ? (
-                <p className="px-4 py-8 text-center text-sm" style={{ color: "#7a7870" }}>
+                <p className="px-4 py-8 text-center text-sm" style={{ color: "var(--muted)" }}>
                   No lines yet. Add your first line above.
                 </p>
               ) : (
@@ -379,23 +379,23 @@ export default function LinesPage() {
                           onClick={() => handleSelectLine(line)}
                           className="w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors"
                           style={{
-                            borderBottom: i < lines.length - 1 ? "1px solid #3a3a35" : undefined,
+                            borderBottom: i < lines.length - 1 ? "1px solid var(--border)" : undefined,
                             backgroundColor: active ? "#2e2e2b" : undefined,
                           }}
                           onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#2e2e2b"; }}
                           onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLButtonElement).style.backgroundColor = ""; }}
                         >
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate" style={{ color: "#f0ede8" }}>{line.name}</p>
+                            <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{line.name}</p>
                             {line.description && (
-                              <p className="text-xs truncate mt-0.5" style={{ color: "#7a7870" }}>{line.description}</p>
+                              <p className="text-xs truncate mt-0.5" style={{ color: "var(--muted)" }}>{line.description}</p>
                             )}
-                            <p className="text-xs mt-1 font-mono" style={{ color: "#7a7870" }}>
+                            <p className="text-xs mt-1 font-mono" style={{ color: "var(--muted)" }}>
                               {line.stationCount ?? 0} stations ·{" "}
                               {new Date(line.created_at).toLocaleDateString("en-GB")}
                             </p>
                           </div>
-                          <ChevronRight size={14} className="shrink-0" style={{ color: active ? "#7a7870" : "#3a3a35" }} />
+                          <ChevronRight size={14} className="shrink-0" style={{ color: active ? "#7a7870" : "var(--border)" }} />
                         </button>
                       </li>
                     );
@@ -410,25 +410,25 @@ export default function LinesPage() {
             {!selectedLine ? (
               <div
                 className="rounded-xl border flex items-center justify-center"
-                style={{ minHeight: 200, backgroundColor: "#222220", borderColor: "#3a3a35" }}
+                style={{ minHeight: 200, backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
               >
-                <p className="text-sm" style={{ color: "#7a7870" }}>← Select a line to view its stations</p>
+                <p className="text-sm" style={{ color: "var(--muted)" }}>← Select a line to view its stations</p>
               </div>
             ) : (
-              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+              <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
 
-                <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "#3a3a35" }}>
+                <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
                   <div>
-                    <h2 className="font-semibold" style={{ color: "#f0ede8" }}>{selectedLine.name}</h2>
+                    <h2 className="font-semibold" style={{ color: "var(--text)" }}>{selectedLine.name}</h2>
                     {selectedLine.description && (
-                      <p className="text-xs mt-0.5" style={{ color: "#7a7870" }}>{selectedLine.description}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>{selectedLine.description}</p>
                     )}
                   </div>
                   {!isDemo && (
                     <button
                       onClick={() => { setShowAddStation(true); setStationError(""); }}
                       className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-                      style={{ color: "#f0ede8", backgroundColor: "#3a3a35" }}
+                      style={{ color: "var(--text)", backgroundColor: "var(--border)" }}
                     >
                       <Plus size={14} />
                       Add Station
@@ -438,22 +438,22 @@ export default function LinesPage() {
 
                 {stationsLoading ? (
                   <div className="flex items-center justify-center py-10">
-                    <Loader2 size={18} className="animate-spin" style={{ color: "#7a7870" }} />
+                    <Loader2 size={18} className="animate-spin" style={{ color: "var(--muted)" }} />
                   </div>
                 ) : (
                   <>
                     {stations.length > 0 && (
-                      <div className="grid grid-cols-[2rem_2rem_1fr_8rem_2.5rem] gap-3 px-5 py-2 border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
+                      <div className="grid grid-cols-[2rem_2rem_1fr_8rem_2.5rem] gap-3 px-5 py-2 border-b" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
                         <div />
-                        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>#</div>
-                        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>Station</div>
-                        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "#7a7870" }}>Target</div>
+                        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--muted)" }}>#</div>
+                        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--muted)" }}>Station</div>
+                        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--muted)" }}>Target</div>
                         <div />
                       </div>
                     )}
 
                     {stations.length === 0 && !showAddStation && (
-                      <p className="px-5 py-8 text-center text-sm" style={{ color: "#7a7870" }}>
+                      <p className="px-5 py-8 text-center text-sm" style={{ color: "var(--muted)" }}>
                         No stations yet.{!isDemo && " Add the first step for this line."}
                       </p>
                     )}
@@ -468,7 +468,7 @@ export default function LinesPage() {
                         onDragEnd={() => { setDragIndex(null); setDragOverIndex(null); }}
                         className="grid grid-cols-[2rem_2rem_1fr_8rem_2.5rem] gap-3 items-center px-5 py-3 border-b last:border-0 select-none transition-colors"
                         style={{
-                          borderColor: "#3a3a35",
+                          borderColor: "var(--border)",
                           backgroundColor: dragOverIndex === i && dragIndex !== i
                             ? "#60a5fa15"
                             : dragIndex === i ? "#1a1916" : undefined,
@@ -476,19 +476,19 @@ export default function LinesPage() {
                         }}
                       >
                         <div className={`flex items-center justify-center ${!isDemo ? "cursor-grab active:cursor-grabbing" : ""}`}
-                          style={{ color: "#3a3a35" }}>
+                          style={{ color: "var(--border)" }}>
                           <GripVertical size={16} />
                         </div>
 
-                        <span className="text-xs font-mono" style={{ color: "#7a7870" }}>{i + 1}</span>
-                        <span className="text-sm font-medium" style={{ color: "#f0ede8" }}>{station.station_name}</span>
-                        <span className="text-sm font-mono" style={{ color: "#7a7870" }}>{station.target_mins} min</span>
+                        <span className="text-xs font-mono" style={{ color: "var(--muted)" }}>{i + 1}</span>
+                        <span className="text-sm font-medium" style={{ color: "var(--text)" }}>{station.station_name}</span>
+                        <span className="text-sm font-mono" style={{ color: "var(--muted)" }}>{station.target_mins} min</span>
 
                         <button
                           onClick={() => handleDeleteStation(station.id)}
                           disabled={isDemo}
                           className="flex items-center justify-center transition-colors disabled:opacity-0"
-                          style={{ color: "#3a3a35" }}
+                          style={{ color: "var(--border)" }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = "#f87171")}
                           onMouseLeave={(e) => (e.currentTarget.style.color = "#3a3a35")}
                           title="Delete station"
@@ -499,10 +499,10 @@ export default function LinesPage() {
                     ))}
 
                     {showAddStation && (
-                      <div className="px-5 py-4 border-t" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
+                      <div className="px-5 py-4 border-t" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
                         <form onSubmit={handleAddStation} className="flex items-end gap-3">
                           <div className="flex-1">
-                            <label className="block text-xs font-medium mb-1" style={{ color: "#f0ede8" }}>Station name *</label>
+                            <label className="block text-xs font-medium mb-1" style={{ color: "var(--text)" }}>Station name *</label>
                             <input
                               type="text" value={stationName}
                               onChange={(e) => setStationName(e.target.value)}
@@ -511,7 +511,7 @@ export default function LinesPage() {
                             />
                           </div>
                           <div className="w-28">
-                            <label className="block text-xs font-medium mb-1" style={{ color: "#f0ede8" }}>Target mins</label>
+                            <label className="block text-xs font-medium mb-1" style={{ color: "var(--text)" }}>Target mins</label>
                             <input
                               type="number" value={targetMins}
                               onChange={(e) => setTargetMins(e.target.value)}
@@ -527,7 +527,7 @@ export default function LinesPage() {
                             <button type="button"
                               onClick={() => { setShowAddStation(false); setStationName(""); setTargetMins("5"); setStationError(""); }}
                               className="text-sm px-3 py-2 rounded-lg transition-colors"
-                              style={{ color: "#7a7870" }}>
+                              style={{ color: "var(--muted)" }}>
                               Cancel
                             </button>
                           </div>

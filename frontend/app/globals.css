@@ -8,7 +8,7 @@ body {
   color: #111827;
 }
 
-/* ── Dark theme tokens ────────────────────────────────────── */
+/* ── Dark theme tokens (default) ─────────────────────────── */
 :root {
   --bg:      #1a1916;
   --surface: #222220;
@@ -16,11 +16,28 @@ body {
   --border:  #3a3a35;
   --text:    #f0ede8;
   --muted:   #7a7870;
+  --subtle:  #4a4a45;
   --green:   #4ade80;
   --red:     #f87171;
   --amber:   #fbbf24;
   --blue:    #60a5fa;
   --accent:  #3b82f6;
+}
+
+/* ── Light theme overrides ────────────────────────────────── */
+[data-theme="light"] {
+  --bg:      #f5f4f0;
+  --surface: #ffffff;
+  --surface2:#eeece8;
+  --border:  #e2dfd9;
+  --text:    #1a1916;
+  --muted:   #6b7280;
+  --subtle:  #9ca3af;
+  --green:   #16a34a;
+  --red:     #dc2626;
+  --amber:   #d97706;
+  --blue:    #2563eb;
+  --accent:  #2563eb;
 }
 
 /* ── Base input (auth pages stay light) ───────────────────── */

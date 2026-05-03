@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Nav from "@/components/nav";
 import { DemoModeProvider } from "@/lib/demo-context";
+import { ToastProvider } from "@/components/toast-provider";
+import { ThemeProvider } from "@/lib/theme-context";
 import { createClient } from "@/lib/supabase/server";
 import { initials } from "@/lib/utils";
 
@@ -18,16 +20,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     supabase.from("production_lines").select("*", { count: "exact", head: true }),
   ]);
 
-  const userName    = profile?.full_name ?? user.email ?? "User";
+  const userName     = profile?.full_name ?? user.email ?? "User";
+  const userEmail    = user.email ?? "";
   const userInitials = initials(userName);
   const defaultIsDemo = (linesCount ?? 0) === 0;
 
   return (
-    <DemoModeProvider defaultIsDemo={defaultIsDemo}>
-      <div className="dash min-h-screen flex flex-col" style={{ backgroundColor: "#1a1916", color: "#f0ede8" }}>
-        <Nav userName={userName} userInitials={userInitials} />
-        <main className="flex-1">{children}</main>
-      </div>
-    </DemoModeProvider>
+    <ThemeProvider>
+      <DemoModeProvider defaultIsDemo={defaultIsDemo}>
+        <ToastProvider>
+          <div className="dash min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
+            <Nav userName={userName} userEmail={userEmail} userInitials={userInitials} />
+            <main className="flex-1">{children}</main>
+          </div>
+        </ToastProvider>
+      </DemoModeProvider>
+    </ThemeProvider>
   );
 }

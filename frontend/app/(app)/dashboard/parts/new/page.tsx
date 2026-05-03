@@ -115,8 +115,8 @@ export default function NewBatchPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#1a1916" }}>
-        <Loader2 size={20} className="animate-spin" style={{ color: "#7a7870" }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg)" }}>
+        <Loader2 size={20} className="animate-spin" style={{ color: "var(--muted)" }} />
       </div>
     );
   }
@@ -146,7 +146,7 @@ export default function NewBatchPage() {
           }
         `}</style>
 
-        <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
+        <div className="min-h-screen" style={{ backgroundColor: "var(--bg)" }}>
           <div className="max-w-[1200px] mx-auto px-6 py-6">
 
             <div className="no-print flex items-start justify-between mb-6">
@@ -155,10 +155,10 @@ export default function NewBatchPage() {
                   <CheckCircle2 size={18} style={{ color: "#4ade80" }} />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold" style={{ color: "#f0ede8" }}>
+                  <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>
                     {createdParts.length} parts created
                   </h1>
-                  <p className="text-sm mt-0.5 font-mono" style={{ color: "#7a7870" }}>
+                  <p className="text-sm mt-0.5 font-mono" style={{ color: "var(--muted)" }}>
                     {batchRef} · {createdLineName}
                     {firstStation && ` · starting at ${firstStation}`}
                   </p>
@@ -169,7 +169,7 @@ export default function NewBatchPage() {
                 <button
                   onClick={handleReset}
                   className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                  style={{ color: "#f0ede8", backgroundColor: "#2e2e2b", border: "1px solid #3a3a35" }}
+                  style={{ color: "var(--text)", backgroundColor: "var(--surface2)", border: "1px solid var(--border)" }}
                 >
                   <RotateCcw size={14} />
                   New Batch
@@ -189,11 +189,11 @@ export default function NewBatchPage() {
                 <div
                   key={part.id}
                   className="qr-card rounded-xl border p-3.5 flex flex-col items-center gap-2"
-                  style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}
+                  style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
                 >
                   <div className="w-full flex items-center gap-1 mb-0.5">
-                    <Factory size={10} style={{ color: "#7a7870" }} className="shrink-0" />
-                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: "#7a7870", fontSize: 9 }}>
+                    <Factory size={10} style={{ color: "var(--muted)" }} className="shrink-0" />
+                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: "var(--muted)", fontSize: 9 }}>
                       Line Pulse
                     </span>
                   </div>
@@ -208,13 +208,13 @@ export default function NewBatchPage() {
                   />
 
                   <div className="w-full text-center">
-                    <p className="text-xs font-mono font-semibold truncate" style={{ color: "#f0ede8" }}>
+                    <p className="text-xs font-mono font-semibold truncate" style={{ color: "var(--text)" }}>
                       {batchRef}
                     </p>
-                    <p className="truncate font-mono" style={{ fontSize: 10, color: "#7a7870" }}>
+                    <p className="truncate font-mono" style={{ fontSize: 10, color: "var(--muted)" }}>
                       {part.qr_code}
                     </p>
-                    <p className="font-mono mt-0.5" style={{ fontSize: 9, color: "#4a4a45" }}>
+                    <p className="font-mono mt-0.5" style={{ fontSize: 9, color: "var(--subtle)" }}>
                       #{pad(i + 1, 3)}
                     </p>
                   </div>
@@ -228,20 +228,20 @@ export default function NewBatchPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--bg)" }}>
       <div className="max-w-[520px] mx-auto px-6 py-6">
         <div className="mb-6">
-          <h1 className="text-xl font-bold" style={{ color: "#f0ede8" }}>New Batch</h1>
-          <p className="text-sm mt-0.5" style={{ color: "#7a7870" }}>
+          <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>New Batch</h1>
+          <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>
             Create a batch of parts entering a production line
           </p>
         </div>
 
-        <div className="rounded-xl border p-6" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#f0ede8" }}>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>
                 Production line *
               </label>
               {lines.length === 0 ? (
@@ -269,14 +269,14 @@ export default function NewBatchPage() {
             </div>
 
             {firstStation && (
-              <div className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm" style={{ backgroundColor: "#2e2e2b" }}>
-                <span style={{ color: "#7a7870" }}>Parts start at</span>
-                <span className="font-semibold" style={{ color: "#f0ede8" }}>{firstStation}</span>
+              <div className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm" style={{ backgroundColor: "var(--surface2)" }}>
+                <span style={{ color: "var(--muted)" }}>Parts start at</span>
+                <span className="font-semibold" style={{ color: "var(--text)" }}>{firstStation}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#f0ede8" }}>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>
                 Batch reference
               </label>
               <input
@@ -284,12 +284,12 @@ export default function NewBatchPage() {
                 value={batchRef}
                 readOnly
                 className="input font-mono cursor-default"
-                style={{ color: "#7a7870" }}
+                style={{ color: "var(--muted)" }}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#f0ede8" }}>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>
                 Number of parts *
               </label>
               <input
@@ -301,7 +301,7 @@ export default function NewBatchPage() {
                 required
                 className="input"
               />
-              <p className="text-xs mt-1" style={{ color: "#7a7870" }}>Max 500 per batch</p>
+              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Max 500 per batch</p>
             </div>
 
             {error && (

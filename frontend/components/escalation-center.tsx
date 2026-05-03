@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockEscalations } from "@/lib/mock-data";
 import type { Escalation } from "@/lib/types";
+import { downloadCsv } from "@/lib/export-csv";
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -21,6 +23,12 @@ export default function EscalationCenter() {
   const { isDemo } = useDemoMode();
   const [escalations, setEscalations] = useState<Escalation[]>([]);
   const [loading, setLoading] = useState(true);
+
+  function handleExport() {
+    downloadCsv("escalations", ["Time", "Issue", "Severity", "Sent To", "Status"],
+      escalations.map((e) => [formatTime(e.triggered_at), e.issue_detail, e.severity, e.assigned_to, e.status])
+    );
+  }
 
   useEffect(() => {
     if (isDemo) {
@@ -47,31 +55,39 @@ export default function EscalationCenter() {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold mb-3" style={{ color: "#7a7870" }}>
-        Escalations & Notifications
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold" style={{ color: "var(--muted)" }}>Escalations & Notifications</h3>
+        {escalations.length > 0 && (
+          <button onClick={handleExport} className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors"
+            style={{ color: "var(--muted)", border: "1px solid var(--border)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}>
+            <Download size={11} /> Export CSV
+          </button>
+        )}
+      </div>
 
-      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         {loading ? (
-          <div className="px-5 py-8 text-center text-xs animate-pulse" style={{ color: "#7a7870" }}>
+          <div className="px-5 py-8 text-center text-xs animate-pulse" style={{ color: "var(--muted)" }}>
             Loading escalations…
           </div>
         ) : escalations.length === 0 ? (
           <div className="px-5 py-8 text-center">
-            <p className="text-sm font-medium" style={{ color: "#7a7870" }}>No escalations today</p>
-            <p className="text-xs mt-1" style={{ color: "#7a7870" }}>
+            <p className="text-sm font-medium" style={{ color: "var(--muted)" }}>No escalations today</p>
+            <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
               The AI engineer will flag issues here as they arise.
             </p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
+              <tr className="border-b" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
                 {["Time", "Issue", "Severity", "Sent To", "Status"].map((h) => (
                   <th
                     key={h}
                     className="text-left text-xs font-medium px-4 py-2.5 uppercase tracking-wide first:pl-5"
-                    style={{ color: "#7a7870" }}
+                    style={{ color: "var(--muted)" }}
                   >
                     {h}
                   </th>
@@ -82,17 +98,17 @@ export default function EscalationCenter() {
               {escalations.map((e, i) => (
                 <tr
                   key={e.id}
-                  className={`transition-colors hover:bg-[#2e2e2b] ${
+                  className={`transition-colors hover:bg-[var(--surface2)] ${
                     i < escalations.length - 1 ? "border-b" : ""
                   }`}
-                  style={i < escalations.length - 1 ? { borderColor: "#3a3a35" } : {}}
+                  style={i < escalations.length - 1 ? { borderColor: "var(--border)" } : {}}
                 >
-                  <td className="pl-5 pr-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "#7a7870" }}>
+                  <td className="pl-5 pr-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "var(--muted)" }}>
                     {formatTime(e.triggered_at)}
-                    <span className="block" style={{ color: "#4a4a45" }}>{timeAgo(e.triggered_at)}</span>
+                    <span className="block" style={{ color: "var(--subtle)" }}>{timeAgo(e.triggered_at)}</span>
                   </td>
 
-                  <td className="px-4 py-3 text-xs max-w-xs" style={{ color: "#f0ede8" }}>
+                  <td className="px-4 py-3 text-xs max-w-xs" style={{ color: "var(--text)" }}>
                     {e.issue_detail}
                   </td>
 
@@ -108,7 +124,7 @@ export default function EscalationCenter() {
                     </span>
                   </td>
 
-                  <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "#7a7870" }}>
+                  <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: "var(--muted)" }}>
                     {e.assigned_to}
                   </td>
 

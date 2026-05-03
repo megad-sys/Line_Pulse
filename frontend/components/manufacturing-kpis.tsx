@@ -32,21 +32,21 @@ function MfgCard({
 }) {
   const s = COLOR_STYLES[color];
   return (
-    <div className="rounded-xl border p-4" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
-      <p className="text-xs font-medium mb-2" style={{ color: "#7a7870" }}>{title}</p>
+    <div className="rounded-xl border p-4" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+      <p className="text-xs font-medium mb-2" style={{ color: "var(--muted)" }}>{title}</p>
       <p className={`text-2xl font-extrabold mb-1 leading-none ${s.num}`}>{value}</p>
       {context && (
-        <p className="text-xs font-semibold mb-2" style={{ color: "#7a7870" }}>{context}</p>
+        <p className="text-xs font-semibold mb-2" style={{ color: "var(--muted)" }}>{context}</p>
       )}
       {barPct !== undefined && (
-        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ backgroundColor: "#3a3a35" }}>
+        <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ backgroundColor: "var(--border)" }}>
           <div
             className={`h-full rounded-full ${s.bar} transition-all`}
             style={{ width: `${Math.min(100, barPct)}%` }}
           />
         </div>
       )}
-      <p className="text-xs" style={{ color: "#7a7870" }}>{sub}</p>
+      <p className="text-xs" style={{ color: "var(--muted)" }}>{sub}</p>
     </div>
   );
 }
@@ -55,11 +55,11 @@ function Skeleton() {
   return (
     <div className="grid grid-cols-4 gap-4">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="rounded-xl border p-4 animate-pulse" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
-          <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: "#3a3a35" }} />
-          <div className="h-7 w-16 rounded mb-2" style={{ backgroundColor: "#3a3a35" }} />
-          <div className="h-1.5 rounded-full mb-2" style={{ backgroundColor: "#3a3a35" }} />
-          <div className="h-3 w-32 rounded" style={{ backgroundColor: "#3a3a35" }} />
+        <div key={i} className="rounded-xl border p-4 animate-pulse" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+          <div className="h-3 w-24 rounded mb-3" style={{ backgroundColor: "var(--border)" }} />
+          <div className="h-7 w-16 rounded mb-2" style={{ backgroundColor: "var(--border)" }} />
+          <div className="h-1.5 rounded-full mb-2" style={{ backgroundColor: "var(--border)" }} />
+          <div className="h-3 w-32 rounded" style={{ backgroundColor: "var(--border)" }} />
         </div>
       ))}
     </div>
@@ -161,7 +161,7 @@ export default function ManufacturingKPIs() {
 
   return (
     <div>
-      <h3 className="text-sm font-semibold mb-3" style={{ color: "#7a7870" }}>Manufacturing KPIs</h3>
+      <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--muted)" }}>Manufacturing KPIs</h3>
       <div className="grid grid-cols-4 gap-4">
         <MfgCard title="OEE"                value={`${kpis.oee}%`}                        sub="Target: 85%"                      color={oeeColor(kpis.oee)}   barPct={kpis.oee} />
         <MfgCard title="First Pass Yield"   value={`${kpis.fpy}%`}                        sub="Parts right first time"           color={fpyColor(kpis.fpy)}   barPct={kpis.fpy} />

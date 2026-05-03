@@ -60,18 +60,18 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#1a1916" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "var(--bg)" }}>
       <div className="max-w-[1400px] mx-auto px-6 py-6">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-xl font-bold" style={{ color: "#f0ede8" }}>Production Dashboard</h1>
-            <p className="text-sm mt-0.5" style={{ color: "#7a7870" }}>{dateLabel}</p>
+            <h1 className="text-xl font-bold" style={{ color: "var(--text)" }}>Production Dashboard</h1>
+            <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>{dateLabel}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "#4ade80" }} />
-            <span className="text-sm" style={{ color: "#7a7870" }}>Live</span>
+            <span className="text-sm" style={{ color: "var(--muted)" }}>Live</span>
           </div>
         </div>
 

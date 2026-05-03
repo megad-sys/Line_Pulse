@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockStationStatus } from "@/lib/mock-data";
 import type { StationStatusResponse, StationRow } from "@/app/api/dashboard/station-status/route";
 import { apiFetch } from "@/lib/api";
+import { downloadCsv } from "@/lib/export-csv";
 
 type StationStatus = "WIP" | "Released" | "Rework" | "On Hold";
 
@@ -20,11 +21,11 @@ const STATUS_STYLES: Record<StationStatus, string> = {
   "WIP":      "text-[#60a5fa] bg-[#60a5fa]/10 border-[#60a5fa]/20",
   "Released": "text-[#4ade80] bg-[#4ade80]/10 border-[#4ade80]/20",
   "Rework":   "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20",
-  "On Hold":  "text-[#7a7870] bg-[#3a3a35] border-[#3a3a35]",
+  "On Hold":  "text-[var(--muted)] bg-[var(--border)] border-[var(--border)]",
 };
 
 function vsTarget(avg: number | null, target: number) {
-  if (avg === null) return { label: "—", className: "text-[#7a7870]", isBottleneck: false };
+  if (avg === null) return { label: "—", className: "text-[var(--muted)]", isBottleneck: false };
   const ratio = avg / target;
   if (ratio <= 1)   return { label: `✓ ${avg}m`, className: "text-[#4ade80] font-semibold", isBottleneck: false };
   if (ratio <= 1.2) return { label: `~ ${avg}m`, className: "text-[#fbbf24] font-semibold", isBottleneck: false };
@@ -39,31 +40,31 @@ function MiniBar({ row }: { row: StationRow }) {
   const fillColor =
     status === "Released" ? "bg-[#4ade80]" :
     status === "Rework"   ? "bg-[#fbbf24]" :
-    status === "On Hold"  ? "bg-[#3a3a35]"  :
+    status === "On Hold"  ? "bg-[var(--border)]"  :
     "bg-[#60a5fa]";
 
   return (
     <div className="flex items-center gap-2 min-w-[100px]">
-      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "#3a3a35" }}>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
         <div className={`h-full rounded-full transition-all ${fillColor}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-mono w-8 text-right shrink-0" style={{ color: "#7a7870" }}>{pct}%</span>
+      <span className="text-xs font-mono w-8 text-right shrink-0" style={{ color: "var(--muted)" }}>{pct}%</span>
     </div>
   );
 }
 
 function Skeleton() {
   return (
-    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
-      <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: "#3a3a35" }}>
-        <div className="h-4 w-40 rounded" style={{ backgroundColor: "#3a3a35" }} />
-        <div className="h-4 w-4 rounded" style={{ backgroundColor: "#3a3a35" }} />
+    <div className="rounded-xl border overflow-hidden animate-pulse" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+      <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: "var(--border)" }}>
+        <div className="h-4 w-40 rounded" style={{ backgroundColor: "var(--border)" }} />
+        <div className="h-4 w-4 rounded" style={{ backgroundColor: "var(--border)" }} />
       </div>
-      <div className="divide-y" style={{ borderColor: "#3a3a35" }}>
+      <div className="divide-y" style={{ borderColor: "var(--border)" }}>
         {[...Array(4)].map((_, i) => (
           <div key={i} className="px-5 py-3 flex gap-6">
             {[28, 16, 10, 24, 12, 20].map((w, j) => (
-              <div key={j} className={`h-3 w-${w} rounded`} style={{ backgroundColor: "#3a3a35" }} />
+              <div key={j} className={`h-3 w-${w} rounded`} style={{ backgroundColor: "var(--border)" }} />
             ))}
           </div>
         ))}
@@ -109,10 +110,10 @@ export default function StationStatusTable() {
   const activeLine = data.lines.find((l) => l.line_id === selectedLineId) ?? data.lines[0];
 
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
 
       {/* Header */}
-      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "#3a3a35" }}>
+      <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: "var(--border)" }}>
         <div className="flex items-center gap-3">
           {data.lines.length > 1 ? (
             <div className="relative flex items-center">
@@ -120,16 +121,16 @@ export default function StationStatusTable() {
                 value={selectedLineId}
                 onChange={(e) => setSelectedLineId(e.target.value)}
                 className="appearance-none text-sm font-semibold pr-5 outline-none cursor-pointer"
-                style={{ color: "#f0ede8", background: "transparent" }}
+                style={{ color: "var(--text)", background: "transparent" }}
               >
                 {data.lines.map((l) => (
                   <option key={l.line_id} value={l.line_id}>{l.line_name}</option>
                 ))}
               </select>
-              <ChevronDown size={14} className="absolute right-0 pointer-events-none" style={{ color: "#7a7870" }} />
+              <ChevronDown size={14} className="absolute right-0 pointer-events-none" style={{ color: "var(--muted)" }} />
             </div>
           ) : (
-            <h2 className="text-sm font-semibold" style={{ color: "#f0ede8" }}>{activeLine.line_name}</h2>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text)" }}>{activeLine.line_name}</h2>
           )}
 
           {data.isDemo && (
@@ -139,18 +140,29 @@ export default function StationStatusTable() {
           )}
         </div>
 
-        <span className="text-xs font-mono" style={{ color: "#7a7870" }}>Station Status</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => downloadCsv(`station-status-${activeLine.line_name}`,
+            ["Station", "Status", "Parts Here", "Completed Today", "Avg Cycle (min)", "Target (min)"],
+            activeLine.stations.map((s) => [s.station_name, deriveStatus(s), s.parts_here, s.completed_today, s.avg_cycle_mins ?? "", s.target_mins]))}
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors"
+            style={{ color: "var(--muted)", border: "1px solid var(--border)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}>
+            <Download size={11} /> Export CSV
+          </button>
+          <span className="text-xs font-mono" style={{ color: "var(--muted)" }}>Station Status</span>
+        </div>
       </div>
 
       {/* Table */}
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
+          <tr className="border-b" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
             {["Station", "Status", "Parts Here", "Progress", "Avg Cycle", "vs Target"].map((h) => (
               <th
                 key={h}
                 className="text-left text-xs font-medium px-4 py-2.5 uppercase tracking-wide first:pl-5"
-                style={{ color: "#7a7870" }}
+                style={{ color: "var(--muted)" }}
               >
                 {h}
               </th>
@@ -166,12 +178,12 @@ export default function StationStatusTable() {
             return (
               <tr
                 key={station.station_name}
-                className={`transition-colors hover:bg-[#2e2e2b] ${
+                className={`transition-colors hover:bg-[var(--surface2)] ${
                   i < activeLine.stations.length - 1 ? "border-b" : ""
                 }`}
-                style={i < activeLine.stations.length - 1 ? { borderColor: "#3a3a35" } : {}}
+                style={i < activeLine.stations.length - 1 ? { borderColor: "var(--border)" } : {}}
               >
-                <td className="pl-5 pr-4 py-3 font-medium whitespace-nowrap" style={{ color: "#f0ede8" }}>
+                <td className="pl-5 pr-4 py-3 font-medium whitespace-nowrap" style={{ color: "var(--text)" }}>
                   {station.station_name}
                 </td>
 
@@ -187,7 +199,7 @@ export default function StationStatusTable() {
                       {station.parts_here}
                     </span>
                   ) : (
-                    <span className="text-xs" style={{ color: "#3a3a35" }}>—</span>
+                    <span className="text-xs" style={{ color: "var(--border)" }}>—</span>
                   )}
                 </td>
 
@@ -195,10 +207,10 @@ export default function StationStatusTable() {
                   <MiniBar row={station} />
                 </td>
 
-                <td className="px-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "#7a7870" }}>
+                <td className="px-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: "var(--muted)" }}>
                   {station.avg_cycle_mins !== null
                     ? `${station.avg_cycle_mins}m`
-                    : <span style={{ color: "#3a3a35" }}>—</span>}
+                    : <span style={{ color: "var(--border)" }}>—</span>}
                 </td>
 
                 <td className="px-4 py-3">
@@ -210,7 +222,7 @@ export default function StationStatusTable() {
                       </span>
                     )}
                     {station.avg_cycle_mins === null && (
-                      <span className="text-xs whitespace-nowrap" style={{ color: "#4a4a45" }}>
+                      <span className="text-xs whitespace-nowrap" style={{ color: "var(--subtle)" }}>
                         target {station.target_mins}m
                       </span>
                     )}
@@ -222,10 +234,10 @@ export default function StationStatusTable() {
         </tbody>
 
         <tfoot>
-          <tr className="border-t" style={{ backgroundColor: "#2e2e2b", borderColor: "#3a3a35" }}>
-            <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "#7a7870" }}>Total in progress</td>
+          <tr className="border-t" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
+            <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>Total in progress</td>
             <td />
-            <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "#f0ede8" }}>
+            <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "var(--text)" }}>
               {activeLine.total_wip} {activeLine.total_wip === 1 ? "part" : "parts"}
             </td>
             <td colSpan={3} />

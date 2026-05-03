@@ -9,6 +9,8 @@ import { useDemoMode } from "@/lib/demo-context";
 import { mockChartData } from "@/lib/mock-data";
 import type { ChartDay } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
+import { Download } from "lucide-react";
+import { downloadCsv } from "@/lib/export-csv";
 
 export default function PlannedVsProduced() {
   const { isDemo } = useDemoMode();
@@ -65,10 +67,22 @@ export default function PlannedVsProduced() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold" style={{ color: "#7a7870" }}>Planned vs Produced</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold" style={{ color: "var(--muted)" }}>Planned vs Produced</h3>
+          {days.length > 0 && (
+            <button onClick={() => downloadCsv("planned-vs-produced", ["Day", "Planned", "Produced"],
+              days.map((d) => [d.label, d.planned ?? 0, d.produced ?? 0]))}
+              className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors"
+              style={{ color: "var(--muted)", border: "1px solid var(--border)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}>
+              <Download size={11} /> CSV
+            </button>
+          )}
+        </div>
 
         <form onSubmit={handleSetTarget} className="flex items-center gap-2">
-          <label className="text-xs" style={{ color: "#7a7870" }}>Today&apos;s target:</label>
+          <label className="text-xs" style={{ color: "var(--muted)" }}>Today&apos;s target:</label>
           <input
             type="number"
             value={target}
@@ -76,7 +90,7 @@ export default function PlannedVsProduced() {
             placeholder="e.g. 80"
             min={1}
             className="w-20 text-xs rounded-lg px-2 py-1.5 outline-none"
-            style={{ backgroundColor: "#2e2e2b", border: "1px solid #3a3a35", color: "#f0ede8" }}
+            style={{ backgroundColor: "var(--surface2)", border: "1px solid var(--border)", color: "var(--text)" }}
             disabled={isDemo}
           />
           <button
@@ -92,12 +106,12 @@ export default function PlannedVsProduced() {
         </form>
       </div>
 
-      <div className="rounded-xl border p-5" style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}>
+      <div className="rounded-xl border p-5" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
         {loading ? (
           <div className="h-52 flex items-center justify-center">
             <div
               className="w-8 h-8 border-2 rounded-full animate-spin"
-              style={{ borderColor: "#3a3a35", borderTopColor: "#7a7870" }}
+              style={{ borderColor: "var(--border)", borderTopColor: "var(--muted)" }}
             />
           </div>
         ) : (
@@ -106,12 +120,12 @@ export default function PlannedVsProduced() {
               <CartesianGrid strokeDasharray="3 3" stroke="#3a3a35" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 11, fill: "#7a7870" }}
+                tick={{ fontSize: 11, fill: "var(--muted)" }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#7a7870" }}
+                tick={{ fontSize: 11, fill: "var(--muted)" }}
                 axisLine={false}
                 tickLine={false}
                 width={30}
@@ -119,14 +133,14 @@ export default function PlannedVsProduced() {
               <Tooltip
                 contentStyle={{
                   fontSize: 12, borderRadius: 8,
-                  backgroundColor: "#222220",
-                  border: "1px solid #3a3a35",
-                  color: "#f0ede8",
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text)",
                 }}
-                cursor={{ fill: "#2e2e2b" }}
+                cursor={{ fill: "var(--surface2)" }}
               />
               <Legend
-                wrapperStyle={{ fontSize: 12, paddingTop: 8, color: "#7a7870" }}
+                wrapperStyle={{ fontSize: 12, paddingTop: 8, color: "var(--muted)" }}
                 iconType="circle"
                 iconSize={8}
               />

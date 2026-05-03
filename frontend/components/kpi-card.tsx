@@ -11,7 +11,7 @@ const colorMap = {
   red:   { accent: "text-[#f87171]", bar: "bg-[#f87171]" },
   amber: { accent: "text-[#fbbf24]", bar: "bg-[#fbbf24]" },
   green: { accent: "text-[#4ade80]", bar: "bg-[#4ade80]" },
-  gray:  { accent: "text-[#7a7870]", bar: "bg-[#7a7870]" },
+  gray:  { accent: "text-[var(--muted)]", bar: "bg-[var(--muted)]" },
 };
 
 export default function KpiCard({
@@ -25,15 +25,15 @@ export default function KpiCard({
   return (
     <div
       className="rounded-xl border p-4 flex flex-col gap-2"
-      style={{ backgroundColor: "#222220", borderColor: "#3a3a35" }}
+      style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}
     >
-      <div className="text-xs font-medium uppercase tracking-wider" style={{ color: "#7a7870" }}>
+      <div className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--muted)" }}>
         {label}
       </div>
       <div className={`text-2xl font-bold font-mono ${accent}`}>{value}</div>
-      {sub && <div className="text-xs" style={{ color: "#7a7870" }}>{sub}</div>}
+      {sub && <div className="text-xs" style={{ color: "var(--muted)" }}>{sub}</div>}
       {progress !== undefined && (
-        <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#3a3a35" }}>
+        <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
           <div className={`h-full rounded-full ${bar}`} style={{ width: `${progress}%` }} />
         </div>
       )}
