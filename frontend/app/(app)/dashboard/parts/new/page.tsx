@@ -176,8 +176,7 @@ export default function NewBatchPage() {
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-                  style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}
+                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500"
                 >
                   <Printer size={16} />
                   Print All Labels
@@ -195,7 +194,7 @@ export default function NewBatchPage() {
                   <div className="w-full flex items-center gap-1 mb-0.5">
                     <Factory size={10} style={{ color: "#7a7870" }} className="shrink-0" />
                     <span className="text-xs font-bold tracking-widest uppercase" style={{ color: "#7a7870", fontSize: 9 }}>
-                      FactoryOS
+                      Line Pulse
                     </span>
                   </div>
 
@@ -315,8 +314,7 @@ export default function NewBatchPage() {
             <button
               type="submit"
               disabled={submitting || lines.length === 0 || !tenantId}
-              className="w-full font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 text-sm"
-              style={{ backgroundColor: "#e8ff47", color: "#0f0f0e" }}
+              className="w-full font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 text-sm bg-blue-600 text-white hover:bg-blue-500"
             >
               {submitting ? `Creating ${numParts} parts…` : `Create ${numParts} parts`}
             </button>

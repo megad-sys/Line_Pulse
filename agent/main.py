@@ -12,7 +12,7 @@ from supabase import Client, create_client
 
 from auth import AuthContext, get_auth_context
 
-app = FastAPI(title="FactoryOS Agent")
+app = FastAPI(title="Line Pulse Agent")
 
 app.add_middleware(
     CORSMiddleware,

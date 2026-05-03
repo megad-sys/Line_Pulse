@@ -129,8 +129,8 @@ export default function AIInsightsPanel() {
       <div className="flex items-start justify-between mb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-amber-400 text-lg">✦</span>
-            <h2 className="text-lg font-bold tracking-tight">AI Production Engineer</h2>
+            <span className="text-blue-400 text-lg">✦</span>
+            <h2 className="text-lg font-bold tracking-tight">Johnny on the Spot</h2>
           </div>
           <p className="text-sm text-gray-400">Analysing your floor in real time</p>
         </div>
@@ -152,7 +152,7 @@ export default function AIInsightsPanel() {
       {/* Insight cards */}
       {loading ? (
         <div className="flex items-center gap-3 py-6 text-gray-500">
-          <Loader2 size={16} className="animate-spin text-amber-400" />
+          <Loader2 size={16} className="animate-spin text-blue-400" />
           <p className="text-sm">Generating insights…</p>
         </div>
       ) : (
@@ -176,7 +176,7 @@ export default function AIInsightsPanel() {
                     </p>
                     <p className="text-xs text-gray-400 leading-relaxed">{detail}</p>
                     {insight.action && (
-                      <p className="text-xs text-amber-400 mt-2 font-medium">
+                      <p className="text-xs text-blue-400 mt-2 font-medium">
                         → {insight.action}
                       </p>
                     )}
@@ -197,14 +197,14 @@ export default function AIInsightsPanel() {
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAsk()}
-            placeholder="Ask your AI engineer — e.g. What's causing the most failures?"
-            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-amber-400/50 transition-colors"
+            placeholder="Ask Johnny — e.g. What's causing the most failures?"
+            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-blue-500/50 transition-colors"
             disabled={isStreaming}
           />
           <button
             onClick={handleAsk}
             disabled={isStreaming || !question.trim()}
-            className="bg-amber-400 hover:bg-amber-300 text-gray-900 font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-40 flex items-center gap-2"
+            className="bg-blue-500 hover:bg-blue-400 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-40 flex items-center gap-2"
           >
             {isStreaming ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
             {isStreaming ? "Thinking…" : "Send"}
@@ -213,7 +213,7 @@ export default function AIInsightsPanel() {
 
         {chatResponse && (
           <div className="mt-3 bg-white/5 border border-white/10 rounded-lg px-4 py-3">
-            <p className="text-xs text-amber-400 font-semibold mb-1.5">AI Engineer</p>
+            <p className="text-xs text-blue-400 font-semibold mb-1.5">Johnny</p>
             <p className="text-sm text-gray-200 leading-relaxed whitespace-pre-wrap">{chatResponse}</p>
           </div>
         )}

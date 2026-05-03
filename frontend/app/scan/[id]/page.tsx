@@ -466,7 +466,7 @@ function Shell({
         <div className="bg-gray-900 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Factory size={16} className="text-amber-400" />
-            <span className="text-white text-sm font-bold tracking-tight">FactoryOS</span>
+            <span className="text-white text-sm font-bold tracking-tight">Line Pulse</span>
           </div>
           <span className={`text-xs px-2 py-0.5 rounded-full ${isDemo ? "text-amber-400 bg-amber-400/10" : "text-gray-400 bg-gray-800"}`}>
             {isDemo ? "Demo" : "Worker View"}

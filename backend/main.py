@@ -10,7 +10,7 @@ from supabase import Client, create_client
 
 from auth import AuthContext, get_auth_context
 
-app = FastAPI(title="FactoryOS Backend")
+app = FastAPI(title="Line Pulse Backend")
 
 app.add_middleware(
     CORSMiddleware,

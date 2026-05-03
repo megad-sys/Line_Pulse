@@ -27,8 +27,8 @@ export default function Nav({
       style={{ backgroundColor: "#0f0f0e", borderColor: "#2e2e2b" }}
     >
       <div className="flex items-center gap-2 font-bold text-lg tracking-tight" style={{ color: "#f0ede8" }}>
-        <Factory size={20} style={{ color: "#e8ff47" }} />
-        <span>FactoryOS</span>
+        <Factory size={20} style={{ color: "#60a5fa" }} />
+        <span>Line Pulse</span>
       </div>
 
       <div className="flex items-center gap-1 flex-1">
@@ -57,7 +57,7 @@ export default function Nav({
           onClick={toggle}
           className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
             isDemo
-              ? "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20 hover:bg-[#fbbf24]/20"
+              ? "text-blue-400 bg-blue-400/10 border-blue-400/20 hover:bg-blue-400/20"
               : "text-[#7a7870] bg-transparent border-[#2e2e2b] hover:border-[#7a7870] hover:text-[#f0ede8]"
           }`}
         >

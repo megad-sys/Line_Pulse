@@ -9,7 +9,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FactoryOS — Factory Intelligence for SME Manufacturers",
+  title: "Line Pulse — Factory Intelligence for SME Manufacturers",
   description:
     "QR-based production tracking and AI-powered insights for small and mid-sized manufacturers.",
 };

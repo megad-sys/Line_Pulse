@@ -42,7 +42,7 @@ function LandingNav() {
     <header className="sticky top-0 z-50 border-b border-[#E5E2DC]/70 bg-white/80 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         <Link href="/" className="font-display text-lg font-bold tracking-tight text-[#1a1916]">
-          FactoryOS
+          Line Pulse
         </Link>
         <nav className="flex items-center gap-7">
           <a href="#how" className="hidden text-sm text-[#1a1916]/80 hover:text-[#1a1916] sm:inline">
@@ -69,7 +69,7 @@ function Hero() {
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
-            <MonoLabel>AI Production Engineer</MonoLabel>
+            <MonoLabel>Johnny on the Spot</MonoLabel>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-[#1a1916] sm:text-6xl md:text-7xl">
@@ -80,7 +80,7 @@ function Hero() {
           </Reveal>
           <Reveal delay={160}>
             <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              FactoryOS tracks every part through every station in real time — and tells you exactly what to
+              Line Pulse tracks every part through every station in real time — and tells you exactly what to
               do when something goes wrong.
             </p>
           </Reveal>
@@ -145,8 +145,8 @@ function DashboardMockup() {
     <div className="mx-auto max-w-4xl rounded-2xl bg-[#1a1916] p-6 shadow-2xl shadow-black/10 ring-1 ring-black/10 sm:p-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-white/70">
-          <span className="text-white">✦</span>
-          <span className="font-mono text-xs uppercase tracking-widest">AI Production Engineer</span>
+          <span className="text-blue-400">✦</span>
+          <span className="font-mono text-xs uppercase tracking-widest">Johnny on the Spot</span>
         </div>
         <div className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
@@ -252,7 +252,7 @@ function Solution() {
     {
       icon: "◎",
       title: "AI spots problems automatically.",
-      body: "FactoryOS monitors every station every 15 minutes. When something goes wrong, it tells you exactly what and why — in plain language.",
+      body: "Line Pulse monitors every station every 15 minutes. When something goes wrong, it tells you exactly what and why — in plain language.",
     },
     {
       icon: "↗",
@@ -274,7 +274,7 @@ function Solution() {
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              Workers scan QR codes at each station. FactoryOS tracks every part in real time and tells you what
+              Workers scan QR codes at each station. Line Pulse tracks every part in real time and tells you what
               needs attention — before it becomes a problem.
             </p>
           </Reveal>
@@ -391,7 +391,7 @@ function CTA() {
               <PrimaryButton href="/dashboard" variant="white">
                 Try Demo →
               </PrimaryButton>
-              <PrimaryButton href="mailto:hello@factoryos.com" variant="white-outline">
+              <PrimaryButton href="mailto:hello@linepulse.com" variant="white-outline">
                 Book a call
               </PrimaryButton>
             </div>
@@ -413,16 +413,16 @@ function Footer() {
       <Container>
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
           <div>
-            <div className="font-display text-lg font-bold text-[#1a1916]">FactoryOS</div>
-            <div className="mt-1 text-sm text-[#9a9688]">AI Production Engineer</div>
+            <div className="font-display text-lg font-bold text-[#1a1916]">Line Pulse</div>
+            <div className="mt-1 text-sm text-[#9a9688]">Johnny on the Spot</div>
           </div>
           <nav className="flex items-center gap-7 text-sm">
             <a href="#" className="text-[#1a1916]/80 hover:text-[#1a1916]">Privacy Policy</a>
-            <a href="mailto:hello@factoryos.com" className="text-[#1a1916]/80 hover:text-[#1a1916]">Contact</a>
+            <a href="mailto:hello@linepulse.com" className="text-[#1a1916]/80 hover:text-[#1a1916]">Contact</a>
           </nav>
         </div>
         <div className="mt-10 border-t border-[#E5E2DC] pt-6 text-xs text-[#9a9688]">
-          © 2026 FactoryOS
+          © 2026 Line Pulse
         </div>
       </Container>
     </footer>

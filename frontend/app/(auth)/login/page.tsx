@@ -40,8 +40,8 @@ export default function LoginPage() {
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email: "demo@factoryos.com",
-      password: "FactoryOS2026",
+      email: "demo@linepulse.com",
+      password: "LinePulse2026",
     });
 
     if (authError) {
@@ -58,9 +58,9 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-            <Factory size={16} className="text-amber-400" />
+            <Factory size={16} className="text-blue-400" />
           </div>
-          <span className="font-bold text-gray-900 text-lg tracking-tight">FactoryOS</span>
+          <span className="font-bold text-gray-900 text-lg tracking-tight">Line Pulse</span>
         </div>
 
         <h1 className="text-xl font-bold text-gray-900 mb-1">Sign in</h1>
