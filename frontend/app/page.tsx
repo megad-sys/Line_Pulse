@@ -11,14 +11,18 @@ function MonoLabel({ children }: { children: React.ReactNode }) {
   return <div className="font-mono-label">{children}</div>;
 }
 
+const BOOK_DEMO_URL = "https://calendly.com/gadmenna97/30min";
+
 function PrimaryButton({
   href,
   children,
   variant = "dark",
+  external = false,
 }: {
   href: string;
   children: React.ReactNode;
   variant?: "dark" | "outline" | "white" | "white-outline";
+  external?: boolean;
 }) {
   const base =
     "inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5";
@@ -29,7 +33,11 @@ function PrimaryButton({
     "white-outline": "border border-white/30 text-white hover:bg-white/10",
   }[variant];
   return (
-    <a href={href} className={`${base} ${styles}`}>
+    <a
+      href={href}
+      className={`${base} ${styles}`}
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
       {children}
     </a>
   );
@@ -52,10 +60,12 @@ function LandingNav() {
             Features
           </a>
           <a
-            href="/dashboard"
+            href={BOOK_DEMO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex h-9 items-center rounded-md bg-[#1a1916] px-4 text-sm font-medium text-white hover:bg-[#1a1916]/90"
           >
-            Try Demo →
+            Book a Demo →
           </a>
         </nav>
       </Container>
@@ -86,7 +96,7 @@ function Hero() {
           </Reveal>
           <Reveal delay={240}>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <PrimaryButton href="/dashboard">Try Demo →</PrimaryButton>
+              <PrimaryButton href={BOOK_DEMO_URL} external>Book a Demo →</PrimaryButton>
               <PrimaryButton href="#how" variant="outline">
                 See how it works
               </PrimaryButton>
@@ -94,7 +104,7 @@ function Hero() {
           </Reveal>
           <Reveal delay={320}>
             <p className="mt-6 text-sm text-[#9a9688]">
-              Used by manufacturers in Germany &nbsp;·&nbsp; No hardware required &nbsp;·&nbsp; Live in one afternoon
+              No hardware required &nbsp;·&nbsp; Live in one afternoon
             </p>
           </Reveal>
         </div>
@@ -388,18 +398,13 @@ function CTA() {
           </Reveal>
           <Reveal delay={160}>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <PrimaryButton href="/dashboard" variant="white">
-                Try Demo →
+              <PrimaryButton href={BOOK_DEMO_URL} variant="white" external>
+                Book a Demo →
               </PrimaryButton>
               <PrimaryButton href="mailto:hello@linepulse.com" variant="white-outline">
-                Book a call
+                Contact us
               </PrimaryButton>
             </div>
-          </Reveal>
-          <Reveal delay={240}>
-            <p className="mt-7 text-xs text-white/40">
-              Used by electronics assembly manufacturers in Germany
-            </p>
           </Reveal>
         </div>
       </Container>
