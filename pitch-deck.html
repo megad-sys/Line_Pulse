@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Line Pulse — Pitch Deck</title>
+  <style>
+    /* ─────────────────────────────────────────────────
+       TOKENS  — edit these to retheme the whole deck
+    ───────────────────────────────────────────────── */
+    :root {
+      --dark:    #1a1916;
+      --blue:    #2563eb;
+      --light:   #F7F5F0;
+      --muted:   #9a9688;
+      --border:  #E5E2DC;
+      --white:   #ffffff;
+      --red:     #dc2626;
+      --green:   #16a34a;
+      --amber:   #d97706;
+    }
+
+    /* ─────────────────────────────────────────────────
+       RESET & BASE
+    ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #d0cec9;
+      color: var(--dark);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ─────────────────────────────────────────────────
+       SLIDE WRAPPER  —  each .slide = one page
+    ───────────────────────────────────────────────── */
+    .slide {
+      width: 960px;
+      min-height: 540px;
+      background: var(--white);
+      margin: 32px auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      padding: 52px 60px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .slide + .slide { margin-top: 20px; }
+
+    /* Slide number */
+    .slide-num {
+      position: absolute;
+      bottom: 20px;
+      right: 28px;
+      font-size: 11px;
+      color: var(--border);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.05em;
+    }
+
+    /* Brand footer bar */
+    .slide::after {
+      content: "Line Pulse";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--dark);
+    }
+
+    /* ─────────────────────────────────────────────────
+       TYPOGRAPHY
+    ───────────────────────────────────────────────── */
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 52px; font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+    h2 { font-size: 36px; font-weight: 800; line-height: 1.1;  letter-spacing: -0.02em; }
+    h3 { font-size: 18px; font-weight: 700; line-height: 1.25; }
+    h4 { font-size: 14px; font-weight: 700; }
+    p  { font-size: 15px; line-height: 1.65; color: #444; }
+    small, .footnote { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    /* ─────────────────────────────────────────────────
+       LAYOUT HELPERS
+    ───────────────────────────────────────────────── */
+    .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    .cols-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
+    .mt-4  { margin-top: 16px; }
+    .mt-6  { margin-top: 24px; }
+    .mt-8  { margin-top: 32px; }
+    .mt-10 { margin-top: 40px; }
+    .flex  { display: flex; }
+    .flex-col { display: flex; flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .gap-6 { gap: 24px; }
+
+    /* ─────────────────────────────────────────────────
+       COMPONENTS
+    ───────────────────────────────────────────────── */
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+    .tag-blue  { color: var(--blue);  background: #eff6ff;  border-color: #bfdbfe; }
+    .tag-dark  { color: var(--white); background: var(--dark); border-color: var(--dark); }
+    .tag-green { color: var(--green); background: #f0fdf4;  border-color: #bbf7d0; }
+    .tag-amber { color: var(--amber); background: #fffbeb;  border-color: #fde68a; }
+    .tag-red   { color: var(--red);   background: #fef2f2;  border-color: #fecaca; }
+
+    .card {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .card-dark {
+      background: var(--dark);
+      color: var(--white);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .card-dark p, .card-dark small { color: rgba(255,255,255,0.65); }
+
+    .stat-block {
+      border-left: 3px solid var(--blue);
+      padding-left: 14px;
+      margin-top: 4px;
+    }
+    .stat-block .number {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .stat-block .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .check-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .check-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+    }
+    .check-list li::before {
+      content: "✓";
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #dcfce7;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .check-list li.wip::before {
+      content: "○";
+      background: #f0f0f0;
+      color: var(--muted);
+    }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--dark);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .source-block {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .big-quote {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--dark);
+      border-left: 4px solid var(--blue);
+      padding-left: 20px;
+    }
+
+    .kpi-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .kpi-pill .kpi-val {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--blue);
+      letter-spacing: -0.02em;
+    }
+    .kpi-pill .kpi-label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ─────────────────────────────────────────────────
+       COVER SLIDE — dark background
+    ───────────────────────────────────────────────── */
+    .slide-cover {
+      background: var(--dark);
+      color: var(--white);
+    }
+    .slide-cover::after { background: var(--blue); }
+    .slide-cover p    { color: rgba(255,255,255,0.65); }
+    .slide-cover .label { color: #60a5fa; }
+    .slide-cover .slide-num { color: rgba(255,255,255,0.2); }
+
+    /* ─────────────────────────────────────────────────
+       PRINT STYLES — "Save as PDF" from browser
+    ───────────────────────────────────────────────── */
+    @page { size: 960px 540px; margin: 0; }
+    @media print {
+      body { background: none; }
+      .slide {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+        margin: 0;
+        page-break-after: always;
+        break-after: page;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HOW TO EDIT THIS DECK
+     ───────────────────────────────────────────────
+     • Open in any browser to preview / present
+     • Print > Save as PDF to share
+     • Edit text directly in the HTML below
+     • BOOK_DEMO_URL is used for the CTA link
+     • Each .slide div = one slide
+     • Change colours in :root at the top of <style>
+═══════════════════════════════════════════════════ -->
+
+<!-- ───────────────────────────────────── 01 COVER -->
+<div class="slide slide-cover">
+  <div>
+    <div class="label" style="color:#60a5fa;">Real-time factory execution · AI-powered</div>
+
+    <h1 style="color:white; margin-top:16px; font-size:64px;">Line Pulse</h1>
+
+    <p style="font-size:22px; color:rgba(255,255,255,0.75); margin-top:20px; max-width:580px; line-height:1.5;">
+      We built a real-time factory execution system for semi-manual production lines.
+      On top of live production data, we built an AI assistant that identifies bottlenecks
+      and routes issues to the right team — in real time.
+    </p>
+  </div>
+
+  <div class="mt-10 flex gap-4 items-center" style="margin-top:auto;">
+    <span class="tag" style="color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); font-size:12px;">
+      hello@linepulse.com
+    </span>
+    <span class="tag" style="color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); font-size:12px;">
+      <!-- EDIT: replace with your website -->
+      linepulse.com
+    </span>
+    <!-- EDIT: Add your location, cohort, or date below -->
+    <span class="tag" style="color:rgba(255,255,255,0.6); border-color:rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); font-size:12px;">
+      2026
+    </span>
+  </div>
+
+  <div class="slide-num">01</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 02 PROBLEM -->
+<div class="slide">
+  <div class="label">The Problem</div>
+  <h2>Most factory floors are still a black box.</h2>
+  <p class="mt-4" style="max-width:620px; color: var(--muted);">
+    Between what ERP systems plan and what actually ships, there is an invisible gap — and it costs manufacturers billions.
+  </p>
+
+  <div class="cols-3 mt-8">
+
+    <div class="card">
+      <div style="font-size:24px; margin-bottom:12px;">📋</div>
+      <h4>Paper &amp; Excel floor</h4>
+      <p style="font-size:13px; margin-top:8px; color:#555;">
+        Managers walk the floor to find out where a part is. No one has real-time status on any station.
+      </p>
+      <div class="stat-block mt-4">
+        <div class="number">60–70%</div>
+        <div class="desc">of European SME manufacturers rely on manual production tracking <sup>①</sup></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:24px; margin-bottom:12px;">⏱</div>
+      <h4>Bottlenecks found too late</h4>
+      <p style="font-size:13px; margin-top:8px; color:#555;">
+        By the time a cycle time breach is visible, it has already cost hours and missed deadlines.
+      </p>
+      <div class="stat-block mt-4">
+        <div class="number">60–65%</div>
+        <div class="desc">average OEE — world-class is 85%. The gap = millions in lost output per year <sup>②</sup></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:24px; margin-bottom:12px;">💸</div>
+      <h4>ERP is not the answer</h4>
+      <p style="font-size:13px; margin-top:8px; color:#555;">
+        SAP and Oracle plan and record — but offer nothing between plan and execution. The floor is still invisible.
+      </p>
+      <div class="stat-block mt-4">
+        <div class="number">$50B</div>
+        <div class="desc">lost annually to unplanned downtime across the manufacturing industry <sup>③</sup></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="source-block">
+    <small>
+      ① Manufacturing Leadership Council, Digital Operations Study, 2022 &nbsp;·&nbsp;
+      ② LNS Research, Manufacturing Operations Management Benchmark; OEE Foundation standard definition &nbsp;·&nbsp;
+      ③ McKinsey &amp; Company, "Industry 4.0: Closing the gap between ambition and execution," 2021
+    </small>
+  </div>
+  <div class="slide-num">02</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 03 MARKET -->
+<div class="slide">
+  <div class="label">The Opportunity</div>
+  <h2>A large market with no affordable option for SMEs.</h2>
+
+  <div class="cols-2 mt-8" style="gap:40px; align-items:start;">
+
+    <div>
+      <div class="cols-2" style="gap:16px;">
+        <div class="kpi-pill">
+          <div class="kpi-val">$14.8B</div>
+          <div class="kpi-label">MES market (2023)</div>
+        </div>
+        <div class="kpi-pill">
+          <div class="kpi-val">$26.6B</div>
+          <div class="kpi-label">MES market (2028)</div>
+        </div>
+        <div class="kpi-pill">
+          <div class="kpi-val">12.5%</div>
+          <div class="kpi-label">CAGR 2023–2028</div>
+        </div>
+        <div class="kpi-pill">
+          <div class="kpi-val">30M</div>
+          <div class="kpi-label">EU manufacturing jobs</div>
+        </div>
+      </div>
+      <small class="mt-4" style="display:block;">
+        ④ MarketsandMarkets, "MES Market – Global Forecast to 2028," 2023 &nbsp;·&nbsp;
+        ⑤ Eurostat, "Key figures on European business," 2022 (manufacturing = ~17% of EU GDP)
+      </small>
+    </div>
+
+    <div class="flex-col gap-4">
+
+      <div class="card">
+        <div class="flex items-center justify-between">
+          <h4>TAM</h4>
+          <span class="tag tag-blue">Global MES</span>
+        </div>
+        <p style="font-size:13px; margin-top:6px;">$26.6B by 2028 — manufacturing execution &amp; real-time production intelligence systems globally <sup>④</sup></p>
+      </div>
+
+      <div class="card" style="border-color: #bfdbfe; background:#eff6ff;">
+        <div class="flex items-center justify-between">
+          <h4>SAM</h4>
+          <span class="tag tag-blue">EU SME Manufacturing</span>
+        </div>
+        <p style="font-size:13px; margin-top:6px;">17% of EU GDP, 30M workers. DACH region alone: 200,000+ manufacturing companies, majority SMEs currently underserved by enterprise MES <sup>⑤</sup></p>
+      </div>
+
+      <div class="card" style="border-color: var(--dark); background: #f5f4f0;">
+        <div class="flex items-center justify-between">
+          <h4>SOM — Beachhead</h4>
+          <span class="tag tag-dark">Target now</span>
+        </div>
+        <p style="font-size:13px; margin-top:6px;">50,000+ semi-manual SME production sites in DACH with 10–250 employees, no MES, tracking on paper or Excel</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mt-6" style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:14px 18px;">
+    <p style="font-size:13px; color:#92400e;">
+      <strong>The gap:</strong> Enterprise MES systems (SAP ME, Siemens Opcenter) cost €200K–2M to implement and require 6–18 months and a consultant. SMEs under 250 employees have no viable option. Line Pulse is built for them.
+    </p>
+  </div>
+
+  <div class="slide-num">03</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 04 SOLUTION -->
+<div class="slide">
+  <div class="label">The Solution</div>
+
+  <div class="cols-2" style="gap:48px; align-items:start;">
+
+    <div>
+      <h2>An AI engineer watching your floor, 24 hours a day.</h2>
+
+      <div class="big-quote mt-8">
+        "Real-time factory execution for semi-manual lines — with an AI that spots bottlenecks
+        and routes issues to the right person, instantly."
+      </div>
+
+      <div class="flex gap-3 mt-6" style="flex-wrap:wrap;">
+        <span class="tag tag-dark">No hardware</span>
+        <span class="tag tag-green">Live in one afternoon</span>
+        <span class="tag tag-blue">No consultant needed</span>
+      </div>
+
+      <p class="mt-6" style="font-size:13px;">
+        Workers scan QR codes at stations on their phone — no app, no login.
+        Every scan updates the dashboard live. AI analyses every 15 minutes
+        and tells production managers exactly what's wrong and what to do.
+      </p>
+    </div>
+
+    <div class="flex-col gap-3 mt-4">
+      <div class="card flex gap-3 items-center" style="padding:14px 16px;">
+        <div style="font-size:20px; flex-shrink:0;">📱</div>
+        <div>
+          <h4>Scan-based real-time tracking</h4>
+          <p style="font-size:12px; margin-top:4px;">Workers scan QR labels at each station. Status updates live. No app download or login required.</p>
+        </div>
+      </div>
+      <div class="card flex gap-3 items-center" style="padding:14px 16px;">
+        <div style="font-size:20px; flex-shrink:0;">📊</div>
+        <div>
+          <h4>Manufacturing KPIs auto-calculated</h4>
+          <p style="font-size:12px; margin-top:4px;">OEE, First Pass Yield, Cycle Time, DPMO, Throughput — from scan data, no manual input.</p>
+        </div>
+      </div>
+      <div class="card flex gap-3 items-center" style="padding:14px 16px;">
+        <div style="font-size:20px; flex-shrink:0;">🤖</div>
+        <div>
+          <h4>AI insights every 15 minutes</h4>
+          <p style="font-size:12px; margin-top:4px;">Plain-language bottleneck detection, anomaly alerts, and recommendations specific to your floor.</p>
+        </div>
+      </div>
+      <div class="card flex gap-3 items-center" style="padding:14px 16px;">
+        <div style="font-size:20px; flex-shrink:0;">🔔</div>
+        <div>
+          <h4>Automatic escalation routing</h4>
+          <p style="font-size:12px; margin-top:4px;">When a threshold is breached, the right person is notified. No dashboard-checking required.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">04</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 05 HOW IT WORKS -->
+<div class="slide">
+  <div class="label">How It Works</div>
+  <h2>Live in one afternoon. No IT project.</h2>
+
+  <div class="cols-4 mt-8">
+
+    <div>
+      <div class="step-num">01</div>
+      <h3 style="margin-top:14px;">Set up your line</h3>
+      <p style="font-size:13px; margin-top:8px;">Add your production line, stations, and target cycle times. Takes 5 minutes. No installation.</p>
+    </div>
+
+    <div>
+      <div class="step-num">02</div>
+      <h3 style="margin-top:14px;">Print QR labels</h3>
+      <p style="font-size:13px; margin-top:8px;">Create a batch of parts. QR labels print on any office printer. Stick them on the physical parts.</p>
+    </div>
+
+    <div>
+      <div class="step-num">03</div>
+      <h3 style="margin-top:14px;">Workers scan</h3>
+      <p style="font-size:13px; margin-top:8px;">At each station, workers scan the QR code with their phone browser. No login. No app download. One tap.</p>
+    </div>
+
+    <div>
+      <div class="step-num">04</div>
+      <h3 style="margin-top:14px;">AI takes over</h3>
+      <p style="font-size:13px; margin-top:8px;">Dashboard updates live. AI monitors every 15 minutes. Alerts sent when bottlenecks or failures are detected.</p>
+    </div>
+
+  </div>
+
+  <div class="mt-8" style="background:var(--dark); border-radius:10px; padding:18px 24px; color:white;">
+    <div class="cols-4">
+      <div style="text-align:center;">
+        <div style="font-size:22px; font-weight:800; color:#60a5fa;">OEE</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:4px;">Overall Equip. Effectiveness</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:22px; font-weight:800; color:#4ade80;">FPY</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:4px;">First Pass Yield</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:22px; font-weight:800; color:#fbbf24;">DPMO</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:4px;">Defects Per Million Opps.</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:22px; font-weight:800; color:#f87171;">Cycle Time</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-top:4px;">Per station vs. target</div>
+      </div>
+    </div>
+    <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:14px; text-align:center;">All calculated automatically from scan data — zero manual input from production managers.</p>
+  </div>
+
+  <div class="slide-num">05</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 06 PRODUCT -->
+<div class="slide">
+  <div class="label">Product</div>
+  <h2>Full-stack factory execution in one tool.</h2>
+
+  <div class="cols-3 mt-8">
+
+    <div>
+      <div class="label" style="font-size:9px; color:var(--muted); margin-bottom:8px;">Floor Visibility</div>
+      <ul class="check-list">
+        <li>Live station status per production line</li>
+        <li>Part-level tracking (WIP, done, rework, failed)</li>
+        <li>Cycle time vs. target per station</li>
+        <li>Bottleneck flag with BOTTLENECK badge</li>
+        <li>Shift-aware (morning / afternoon / night)</li>
+        <li>Planned vs. produced 7-day chart</li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="label" style="font-size:9px; color:var(--muted); margin-bottom:8px;">AI &amp; Alerting</div>
+      <ul class="check-list">
+        <li>AI insights panel — 3–5 insights every 15 min</li>
+        <li>Plain-language analysis (Groq / Llama 3.3-70B)</li>
+        <li>Chat with AI: ask anything about your floor</li>
+        <li>Auto-escalations: QC failures, cycle breaches</li>
+        <li>Escalation routing to correct role / person</li>
+        <li>In-app toast notifications</li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="label" style="font-size:9px; color:var(--muted); margin-bottom:8px;">Operations</div>
+      <ul class="check-list">
+        <li>Batch creation + QR label print</li>
+        <li>Work order management (priority, status, qty)</li>
+        <li>NCR (non-conformance report) tracking</li>
+        <li>Manufacturing KPIs: OEE, FPY, DPMO, scrap</li>
+        <li>CSV export on all tables</li>
+        <li>Multi-tenant SaaS (Supabase RLS)</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <hr class="divider" />
+
+  <div class="flex items-center gap-4" style="flex-wrap:wrap;">
+    <span class="tag tag-blue">Next.js 14</span>
+    <span class="tag tag-blue">FastAPI</span>
+    <span class="tag tag-blue">Supabase PostgreSQL</span>
+    <span class="tag tag-blue">Groq / Llama 3.3-70B</span>
+    <span class="tag tag-blue">Vercel</span>
+    <span class="tag tag-dark">Multi-tenant RLS</span>
+    <span class="tag tag-dark">15-min AI cron</span>
+    <span class="tag tag-green">No hardware required</span>
+  </div>
+
+  <div class="slide-num">06</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 07 TRACTION -->
+<div class="slide">
+  <div class="label">Traction &amp; Validation</div>
+  <h2>Working MVP. Ready for first pilots.</h2>
+
+  <div class="cols-2 mt-8" style="gap:40px;">
+
+    <div>
+      <h4 style="color:var(--muted); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:12px;">What's built ✓</h4>
+      <ul class="check-list">
+        <li>End-to-end QR scan → live tracking flow</li>
+        <li>Multi-tenant SaaS architecture deployed on Vercel</li>
+        <li>AI insights engine (15-min cron, Groq LLM)</li>
+        <li>Automatic escalation routing</li>
+        <li>Full manufacturing KPI suite (OEE, FPY, DPMO)</li>
+        <li>Work order management + NCR tracking</li>
+        <li>Batch creation + QR label printing</li>
+        <li>Dark/light mode, CSV export, responsive UI</li>
+        <li>Working demo environment with realistic data</li>
+      </ul>
+    </div>
+
+    <div>
+      <h4 style="color:var(--muted); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:12px;">Next 90 days</h4>
+      <ul class="check-list">
+        <li class="wip">3 paying pilot customers signed (DACH)</li>
+        <li class="wip">First real production line live on platform</li>
+        <li class="wip">SAP / ERP integration module scoped</li>
+        <li class="wip">Technical co-founder hired</li>
+        <li class="wip">Hannover Messe / SPS presence</li>
+      </ul>
+
+      <!-- EDIT: Add customer logos or quotes here -->
+      <div class="card mt-6" style="border-color:#bfdbfe; background:#eff6ff;">
+        <p style="font-size:13px; color:#1e40af; font-style:italic;">
+          "We walk the floor twice a shift just to know where parts are. If this worked, it would save us hours."
+        </p>
+        <p style="font-size:11px; color:#3b82f6; margin-top:8px;">
+          — Production manager, electronics assembler, DACH region
+          <!-- EDIT: Replace with a real quote when you have one -->
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slide-num">07</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 08 BUSINESS MODEL -->
+<div class="slide">
+  <div class="label">Business Model</div>
+  <h2>SaaS. Per production line. Low churn.</h2>
+
+  <div class="cols-3 mt-8">
+
+    <div class="card-dark">
+      <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.45); margin-bottom:12px;">Pricing</div>
+      <div style="font-size:28px; font-weight:800; color:white; line-height:1.1;">€150–400</div>
+      <div style="font-size:13px; color:rgba(255,255,255,0.55); margin-top:4px;">per production line / month</div>
+      <hr style="border:none; border-top:1px solid rgba(255,255,255,0.12); margin:16px 0;" />
+      <p style="font-size:12px;">SME with 3 lines → <strong style="color:white;">€450–1,200 / month</strong></p>
+      <p style="font-size:12px; margin-top:6px;">Land &amp; expand: start with 1 line pilot, grow to full plant</p>
+    </div>
+
+    <div class="card">
+      <div class="label" style="font-size:9px; margin-bottom:10px;">Go-to-Market</div>
+      <ul class="check-list">
+        <li>Free 30-day pilot — no contract, no hardware</li>
+        <li>Direct outbound to production managers</li>
+        <li>Book demo via Calendly (active)</li>
+        <li>DACH focus (Germany, Austria, Switzerland)</li>
+        <li>Trade shows: Hannover Messe, SPS Nuremberg</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="label" style="font-size:9px; margin-bottom:10px;">Why it's sticky</div>
+      <ul class="check-list">
+        <li>Daily critical workflow — not nice-to-have</li>
+        <li>Historical scan data creates lock-in</li>
+        <li>Workers adopt fast (phone scan, no training)</li>
+        <li>KPIs replace manual spreadsheet reports</li>
+        <li>ERP integration planned as premium upsell</li>
+      </ul>
+      <div class="stat-block mt-4">
+        <div class="number" style="font-size:20px;">Low CAC</div>
+        <div class="desc">Direct outbound + product demo drives quick evaluation cycle. Target CAC payback &lt; 3 months.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="slide-num">08</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 09 TEAM -->
+<div class="slide">
+  <div class="label">Team</div>
+  <h2><!-- EDIT: Add your headline here e.g. "Operators building for operators." --></h2>
+
+  <div class="cols-2 mt-8" style="gap:40px;">
+
+    <!-- EDIT: Replace these cards with real team member info -->
+    <div class="card" style="min-height:160px;">
+      <h4><!-- Name --></h4>
+      <p style="font-size:12px; color:var(--blue); margin-top:4px;"><!-- Role, e.g. Founder & CEO --></p>
+      <p style="font-size:13px; margin-top:12px; color:#555;">
+        <!-- 2–3 sentences: background, domain credibility, why you're the right person to build this -->
+      </p>
+    </div>
+
+    <div class="card" style="min-height:160px;">
+      <h4><!-- Name --></h4>
+      <p style="font-size:12px; color:var(--blue); margin-top:4px;"><!-- Role, e.g. Co-founder & CTO --></p>
+      <p style="font-size:13px; margin-top:12px; color:#555;">
+        <!-- 2–3 sentences: technical background, relevant prior experience -->
+      </p>
+    </div>
+
+  </div>
+
+  <div class="mt-6" style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:14px 18px;">
+    <p style="font-size:13px; color:#92400e;">
+      <strong>Looking for:</strong> Technical co-founder with embedded systems / industrial software / backend SaaS background.
+      Strong interest in manufacturing &amp; Industry 4.0.
+      <!-- EDIT: remove or update this if you already have a technical co-founder -->
+    </p>
+  </div>
+
+  <div class="slide-num">09</div>
+</div>
+
+
+<!-- ───────────────────────────────────── 10 THE ASK -->
+<div class="slide slide-cover">
+  <div>
+    <div class="label" style="color:#60a5fa;">The Ask</div>
+    <h2 style="color:white; margin-top:12px; font-size:42px;">
+      <!-- EDIT: Replace with your target amount and program -->
+      Seeking €[X] + programme support.
+    </h2>
+    <p style="font-size:18px; color:rgba(255,255,255,0.65); margin-top:16px; max-width:560px;">
+      We have a working product, a clear customer, and a large market. We need the network
+      and validation to close our first 3 paying pilots.
+    </p>
+  </div>
+
+  <div class="cols-3 mt-8" style="margin-top:40px;">
+
+    <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:18px;">
+      <div style="font-size:22px; font-weight:800; color:#60a5fa; margin-bottom:8px;">① Pilots</div>
+      <p style="font-size:13px; color:rgba(255,255,255,0.6);">Onboard first 3 paying customers in DACH — travel, customisation support, and dedicated onboarding time.</p>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:18px;">
+      <div style="font-size:22px; font-weight:800; color:#60a5fa; margin-bottom:8px;">② Team</div>
+      <p style="font-size:13px; color:rgba(255,255,255,0.6);">Hire or find technical co-founder. First engineering hire. Customer success capacity for pilot support.</p>
+    </div>
+
+    <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:18px;">
+      <div style="font-size:22px; font-weight:800; color:#60a5fa; margin-bottom:8px;">③ GTM</div>
+      <p style="font-size:13px; color:rgba(255,255,255,0.6);">Trade show presence (Hannover Messe, SPS Nuremberg). Direct outbound tooling. DACH market entry.</p>
+    </div>
+
+  </div>
+
+  <div class="mt-8" style="margin-top:auto; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+    <a href="https://calendly.com/gadmenna97/30min" target="_blank"
+       style="display:inline-flex; align-items:center; height:44px; padding:0 22px; background:#2563eb; color:white; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">
+      Book a Demo →
+    </a>
+    <span style="font-size:14px; color:rgba(255,255,255,0.5);">hello@linepulse.com</span>
+    <!-- EDIT: Add why this specific accelerator matters to you -->
+    <span style="font-size:13px; color:rgba(255,255,255,0.4); margin-left:auto;">
+      <!-- e.g. "We applied because of your manufacturing portfolio and DACH network." -->
+    </span>
+  </div>
+
+  <div class="slide-num">10</div>
+</div>
+
+
+<!-- ───────────────────────────────── EDIT GUIDE at bottom -->
+<!--
+  ╔══════════════════════════════════════════════════╗
+  ║  EDITING GUIDE                                   ║
+  ╠══════════════════════════════════════════════════╣
+  ║  To customise for each accelerator:              ║
+  ║  1. Slide 01 — update year / cohort tag          ║
+  ║  2. Slide 07 — add real customer quotes          ║
+  ║  3. Slide 08 — update pricing if changed         ║
+  ║  4. Slide 09 — fill in team bios                 ║
+  ║  5. Slide 10 — update ask amount, use of funds   ║
+  ║              — add a personal note to accelerator║
+  ║                                                  ║
+  ║  To add a slide: copy a <div class="slide">      ║
+  ║  block and update slide-num and content.         ║
+  ║                                                  ║
+  ║  To change colours: edit :root variables at top  ║
+  ║  of <style> block.                               ║
+  ║                                                  ║
+  ║  To export PDF: open in Chrome → Print →         ║
+  ║  Save as PDF → set page size to match slides     ║
+  ╚══════════════════════════════════════════════════╝
+-->
+
+</body>
+</html>
