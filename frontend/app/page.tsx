@@ -79,19 +79,17 @@ function Hero() {
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
-            <MonoLabel>Johnny on the Spot</MonoLabel>
+            <MonoLabel>Johnny on the Spot — your autonomous AI production agent</MonoLabel>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-[#1a1916] sm:text-6xl md:text-7xl">
-              Your factory floor,
-              <br />
-              finally visible.
+              The AI agent watching your production line — so you don&apos;t have to.
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              Line Pulse tracks every part through every station in real time — and tells you exactly what to
-              do when something goes wrong.
+              Johnny — your autonomous AI production agent — runs in the background monitoring every station,
+              detecting every bottleneck, and routing every issue to the right person. No dashboard-checking required.
             </p>
           </Reveal>
           <Reveal delay={240}>
@@ -104,7 +102,7 @@ function Hero() {
           </Reveal>
           <Reveal delay={320}>
             <p className="mt-6 text-sm text-[#9a9688]">
-              No hardware required &nbsp;·&nbsp; Live in one afternoon
+              No hardware required &nbsp;·&nbsp; Live in one afternoon &nbsp;·&nbsp; Autonomous AI agent included
             </p>
           </Reveal>
         </div>
@@ -209,18 +207,18 @@ function Problem() {
   const cards = [
     {
       icon: "📋",
-      title: "Excel & paper",
-      body: "Work orders tracked on spreadsheets. Nobody knows where a part is without walking the floor.",
+      title: "No one watching the floor",
+      body: "Between shifts, between meetings, between reports — your production line runs unsupervised. Problems compound before anyone notices.",
     },
     {
       icon: "⏱",
-      title: "Problems found too late",
-      body: "By the time a bottleneck is visible, it's already cost you hours and missed deadlines.",
+      title: "Humans can't monitor everything",
+      body: "A plant manager can't watch every station, every shift, every day. By the time a bottleneck is obvious, it's already cost you hours and a missed deadline.",
     },
     {
       icon: "💸",
-      title: "ERP doesn't help",
-      body: "SAP and Oracle plan and record — but the floor is a black box in between.",
+      title: "Your ERP records. It doesn't act.",
+      body: "SAP and Oracle tell you what happened yesterday. They don't tell you what's going wrong right now — and they certainly don't fix it.",
     },
   ];
   return (
@@ -232,7 +230,7 @@ function Problem() {
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-[#1a1916] sm:text-5xl">
-              Most factories are still flying blind.
+              Most factories find out about problems too late — or not at all.
             </h2>
           </Reveal>
         </div>
@@ -261,13 +259,13 @@ function Solution() {
     },
     {
       icon: "◎",
-      title: "AI spots problems automatically.",
-      body: "Line Pulse monitors every station every 15 minutes. When something goes wrong, it tells you exactly what and why — in plain language.",
+      title: "Johnny detects. Johnny decides.",
+      body: "Every 15 minutes, Johnny analyses your full production state — cycle times, QC rates, station queues — and decides what needs action. He doesn't wait to be asked.",
     },
     {
       icon: "↗",
-      title: "Escalates before you notice.",
-      body: "When a part fails QC 3 times, or a station backs up, the right person gets notified automatically. No dashboard-checking required.",
+      title: "Routes the right action to the right person.",
+      body: "When Johnny detects a bottleneck, a QC spike, or a delayed work order, he routes a specific action to the right person — shift lead, QC manager, or production director — automatically.",
     },
   ];
   return (
@@ -279,13 +277,13 @@ function Solution() {
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-[#1a1916] sm:text-5xl">
-              An AI engineer watching your floor, 24 hours a day.
+              An autonomous AI agent — running on your floor, 24 hours a day.
             </h2>
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              Workers scan QR codes at each station. Line Pulse tracks every part in real time and tells you what
-              needs attention — before it becomes a problem.
+              Workers scan a QR code at each station. Johnny processes every scan, detects every anomaly,
+              and takes action — automatically. No one needs to open a dashboard for Johnny to do his job.
             </p>
           </Reveal>
         </div>
@@ -311,7 +309,7 @@ function HowItWorks() {
     { n: "01", title: "Set up your line",  body: "Add your production line and stations. Takes 5 minutes." },
     { n: "02", title: "Print QR labels",   body: "Create a batch of parts. Print labels on your office printer." },
     { n: "03", title: "Workers scan",      body: "Workers scan QR at each station with their phone. No training needed." },
-    { n: "04", title: "AI takes over",     body: "Your dashboard updates live. AI monitors, alerts, and advises automatically." },
+    { n: "04", title: "Johnny takes over",  body: "Johnny monitors your floor autonomously — every 15 minutes, every shift, every day. He detects issues, creates escalations, and notifies the right people without anyone checking a screen." },
   ];
   return (
     <section id="how" className="border-y border-[#E5E2DC] py-24 sm:py-28">
@@ -346,11 +344,11 @@ function HowItWorks() {
 function Features() {
   const features = [
     { title: "Real-time floor visibility",  body: "Parts tracked at every station, live." },
-    { title: "AI production insights",      body: "Plain-language analysis every 15 minutes." },
+    { title: "Johnny on the Spot",           body: "Your autonomous AI production agent — monitors your floor every 15 minutes and acts without being asked." },
     { title: "Automatic escalations",       body: "Right person notified when thresholds breach." },
     { title: "Manufacturing KPIs",          body: "OEE, FPY, DPMO, cycle time — calculated automatically." },
     { title: "No hardware required",        body: "Phone camera + office printer. That's it." },
-    { title: "ERP-ready",                   body: "Designed to integrate with SAP, Oracle, and other systems." },
+    { title: "Works alongside your existing systems", body: "Designed to sit next to your ERP, MES, or spreadsheets — not replace them." },
   ];
   return (
     <section id="features" className="bg-[#F7F5F0] py-24 sm:py-28">
@@ -388,12 +386,13 @@ function CTA() {
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
             <h2 className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-              See your factory floor clearly — starting today.
+              Meet Johnny. Your AI production agent — live this afternoon.
             </h2>
           </Reveal>
           <Reveal delay={80}>
             <p className="mx-auto mt-5 max-w-md text-lg text-white/60">
-              Free pilot. No contract. No hardware. No consultant.
+              Free 30-day pilot. No contract. No hardware. No consultant.
+              Johnny starts working the moment you print your first QR label.
             </p>
           </Reveal>
           <Reveal delay={160}>
@@ -419,7 +418,7 @@ function Footer() {
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
           <div>
             <div className="font-display text-lg font-bold text-[#1a1916]">Line Pulse</div>
-            <div className="mt-1 text-sm text-[#9a9688]">Johnny on the Spot</div>
+            <div className="mt-1 text-sm text-[#9a9688]">Powered by Johnny on the Spot, your AI production agent</div>
           </div>
           <nav className="flex items-center gap-7 text-sm">
             <a href="#" className="text-[#1a1916]/80 hover:text-[#1a1916]">Privacy Policy</a>
