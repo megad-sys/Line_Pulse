@@ -1,5 +1,4 @@
 {
-  "rootDirectory": "frontend",
   "crons": [
     {
       "path": "/api/agent",
