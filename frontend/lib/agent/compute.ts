@@ -157,7 +157,7 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
       .eq("shift_id", shiftId),
     db
       .from("work_orders")
-      .select("quantity_planned")
+      .select("planned_qty")
       .eq("agent_shift_id", shiftId),
   ]);
 
@@ -173,7 +173,7 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
   );
   const units_completed_total = finishedExits.length;
   const planned_units_total = (wos ?? []).reduce(
-    (s, w) => s + (w.quantity_planned ?? 0),
+    (s, w) => s + (w.planned_qty ?? 0),
     0
   );
   const total_defects = rows.filter((r) => r.scan_type === "defect").length;
@@ -215,7 +215,7 @@ export async function getWorkOrderStatus(shiftId: string): Promise<WorkOrderStat
     db
       .from("work_orders")
       .select(
-        "id, wo_number, part_number, customer_name, quantity_planned, priority, due_date, customer_priority"
+        "id, wo_number, part_number, customer_name, planned_qty, priority, due_date, customer_priority"
       )
       .eq("agent_shift_id", shiftId),
     db
@@ -256,11 +256,11 @@ export async function getWorkOrderStatus(shiftId: string): Promise<WorkOrderStat
       wo_number: wo.wo_number,
       part_name: wo.part_number ?? "",
       customer_name: wo.customer_name ?? "",
-      quantity_planned: wo.quantity_planned ?? 0,
+      quantity_planned: wo.planned_qty ?? 0,
       units_completed,
       progress_pct:
-        wo.quantity_planned > 0
-          ? (units_completed / wo.quantity_planned) * 100
+        (wo.planned_qty ?? 0) > 0
+          ? (units_completed / (wo.planned_qty ?? 1)) * 100
           : 0,
       current_station,
       last_scan_at,
