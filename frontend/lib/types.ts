@@ -107,6 +107,69 @@ export interface ChartDay {
   produced: number;
 }
 
+export interface BottleneckResult {
+  worst_station: string;
+  avg_cycle_mins: number;
+  target_cycle_mins: number;
+  bottleneck_score: number;
+  severity: "critical" | "warning" | "ok";
+  stall_detected: boolean;
+  stall_duration_mins: number;
+  queue_depth: number;
+  recommendation: string;
+}
+
+export interface QualityResult {
+  worst_station: string;
+  worst_station_defect_rate_pct: number;
+  total_defects: number;
+  overall_defect_rate_pct: number;
+  severity: "critical" | "warning" | "ok";
+  trend: "rising" | "stable" | "improving";
+  recommendation: string;
+}
+
+export interface PlanningResult {
+  plan_attainment_pct: number;
+  projected_eod_units: number;
+  planned_units: number;
+  gap_units: number;
+  closeable_this_shift: boolean;
+  at_risk_work_orders: string[];
+  recommended_sequence: Array<{
+    wo_number: string;
+    part_name: string;
+    customer_name: string;
+    customer_priority: "critical" | "high" | "normal";
+    reason: string;
+  }>;
+  recommendation: string;
+}
+
+export interface ShiftResult {
+  one_line_summary: string;
+  top_priority: string;
+  action_required: boolean;
+  handover_notes: string;
+}
+
+export interface OrchestratorResult {
+  computed_at: string;
+  shift_id: string;
+  duration_ms: number;
+  context_summary: {
+    stations_count: number;
+    units_completed: number;
+    hours_remaining: number;
+  };
+  agents: {
+    bottleneck: BottleneckResult | { error: string };
+    quality: QualityResult | { error: string };
+    planning: PlanningResult | { error: string };
+    shift: ShiftResult | { error: string };
+  };
+}
+
 export interface AgentAlert {
   id: string;
   detected_at: string;

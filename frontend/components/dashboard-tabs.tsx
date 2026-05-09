@@ -6,7 +6,7 @@ import { DataSourceModal } from "@/components/data-source-modal";
 import { LayoutGrid, BarChart2, Settings2, PenLine } from "lucide-react";
 import StationStatusTable from "@/components/station-status-table";
 import PartStatusTable from "@/components/part-status-table";
-import AIInsightsPanel from "@/components/ai-insights-panel";
+import ShiftAnalysisPanel from "@/components/shift-analysis-panel";
 import ManufacturingKPIs from "@/components/manufacturing-kpis";
 import PlannedVsProduced from "@/components/planned-vs-produced";
 import EscalationCenter from "@/components/escalation-center";
@@ -138,7 +138,7 @@ export default function DashboardTabs({
           <div className="flex gap-5 items-start">
             {/* Left: insights + escalations */}
             <div className="flex-1 min-w-0 flex flex-col gap-6">
-              <AIInsightsPanel />
+              <ShiftAnalysisPanel />
               <EscalationCenter />
             </div>
             {/* Right: chat panel */}

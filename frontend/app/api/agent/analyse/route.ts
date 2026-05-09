@@ -9,15 +9,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "shiftId is required" }, { status: 400 });
   }
 
+  const db = createServiceClient();
+
+  let resolvedShiftId = shiftId;
+  if (shiftId === "latest") {
+    const { data } = await db
+      .from("shifts")
+      .select("id")
+      .order("start_time", { ascending: false })
+      .limit(1)
+      .single();
+    if (!data) return NextResponse.json({ error: "No shifts found" }, { status: 404 });
+    resolvedShiftId = data.id;
+  }
+
   const start = Date.now();
 
-  const result = await runOrchestrator(shiftId);
+  const result = await runOrchestrator(resolvedShiftId);
 
   const duration_ms = Date.now() - start;
 
-  const db = createServiceClient();
   await db.from("agent_runs").insert({
-    shift_id: shiftId,
+    shift_id: resolvedShiftId,
     ran_at: new Date().toISOString(),
     result_json: result,
     duration_ms,
