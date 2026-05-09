@@ -1,4 +1,4 @@
-import type { WorkOrder, Station, AIInsight, KPIs, PartKPIs, ManufacturingKPIs, ChartDay, Escalation } from "./types";
+import type { WorkOrder, Station, AIInsight, KPIs, PartKPIs, ManufacturingKPIs, ChartDay, AgentAlert } from "./types";
 
 export const mockKpis: KPIs = {
   unitsProduced: 187,
@@ -215,31 +215,37 @@ export const mockChartData: ChartDay[] = [
   { date: daysAgo(0), label: "Today",     planned: 80, produced: 33 },
 ];
 
-// ── Escalations (CHANGE 4 spec) ──────────────────────────────────
+// ── Agent Alerts (from agent_alerts table) ────────────────────────
 
-export const mockEscalations: Escalation[] = [
+export const mockAgentAlerts: AgentAlert[] = [
   {
-    id: "esc-1",
-    triggered_at: new Date(Date.now() - 3.75 * 3600000).toISOString(),
-    issue_detail: "Part #QR-047 failed QC 3 times at Visual Inspection",
+    id: "alert-1",
+    detected_at: new Date(Date.now() - 3.75 * 3600000).toISOString(),
+    alert_type: "quality_spike",
+    station_name: "Visual Inspection",
     severity: "critical",
-    assigned_to: "Quality Engineer",
-    status: "notified",
+    stall_duration_mins: null,
+    resolved_at: new Date(Date.now() - 3 * 3600000).toISOString(),
+    resolved_by: "Quality Engineer",
   },
   {
-    id: "esc-2",
-    triggered_at: new Date(Date.now() - 2.46 * 3600000).toISOString(),
-    issue_detail: "Visual Inspection averaging 14.8 min — 2.3× the 10 min target",
+    id: "alert-2",
+    detected_at: new Date(Date.now() - 2.46 * 3600000).toISOString(),
+    alert_type: "stall",
+    station_name: "Visual Inspection",
     severity: "warning",
-    assigned_to: "Production Manager",
-    status: "notified",
+    stall_duration_mins: 14.8,
+    resolved_at: null,
+    resolved_by: null,
   },
   {
-    id: "esc-3",
-    triggered_at: new Date(Date.now() - 1.25 * 3600000).toISOString(),
-    issue_detail: "Rework rate reached 12% this shift",
+    id: "alert-3",
+    detected_at: new Date(Date.now() - 1.25 * 3600000).toISOString(),
+    alert_type: "quality_spike",
+    station_name: "Functional Test",
     severity: "critical",
-    assigned_to: "Quality Engineer",
-    status: "notified",
+    stall_duration_mins: null,
+    resolved_at: null,
+    resolved_by: null,
   },
 ];

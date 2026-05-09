@@ -55,9 +55,9 @@ export default function AIInsightsPanel() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-blue-400 text-lg">✦</span>
-            <h2 className="text-lg font-bold tracking-tight">Johnny on the Spot</h2>
+            <h2 className="text-lg font-bold tracking-tight">Agent Insights</h2>
           </div>
-          <p className="text-sm text-gray-400">Analysing your floor in real time</p>
+          <p className="text-sm text-gray-400">Monitoring your floor in real time</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {updatedAt && <span className="text-xs text-gray-500 font-mono">Updated {updatedAt}</span>}

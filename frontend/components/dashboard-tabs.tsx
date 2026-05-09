@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { DataSourceModal } from "@/components/data-source-modal";
-import { Suspense } from "react";
 import { LayoutGrid, BarChart2, Settings2, PenLine } from "lucide-react";
-import KpiCard from "@/components/kpi-card";
-import KpiSkeleton from "@/components/kpi-skeleton";
 import StationStatusTable from "@/components/station-status-table";
 import PartStatusTable from "@/components/part-status-table";
 import AIInsightsPanel from "@/components/ai-insights-panel";
@@ -55,14 +52,22 @@ export default function DashboardTabs({
         {/* ── Shopfloor tab ──────────────────────────────────── */}
         {activeTab === "shopfloor" && (
           <div className="flex flex-col gap-5">
-            <Suspense fallback={<KpiSkeleton />}>
-              <div className="grid grid-cols-4 gap-4">
-                <KpiCard label="Parts in Production" value={`${kpis.partsInProduction}`} sub="currently in progress" color="blue" />
-                <KpiCard label="Released Today"       value={`${kpis.releasedToday}`}    sub="completed this shift"  color="green" />
-                <KpiCard label="Rework / Failed"      value={`${kpis.reworkFailed}`}     sub="need attention"        color="red" />
-                <KpiCard label="Active Lines"         value={`${kpis.activeLines}`}      sub="lines with WIP parts"  color="blue" />
-              </div>
-            </Suspense>
+            <div className="flex items-stretch rounded-xl border overflow-hidden"
+              style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+              {[
+                { label: "In Production",  value: kpis.partsInProduction, color: "#60a5fa", sub: "parts active now" },
+                { label: "Released Today", value: kpis.releasedToday,    color: "#4ade80", sub: "completed this shift" },
+                { label: "Rework / Failed",value: kpis.reworkFailed,     color: "#f87171", sub: "need attention" },
+                { label: "Active Lines",   value: kpis.activeLines,      color: "#60a5fa", sub: "lines with WIP" },
+              ].map((m, i) => (
+                <div key={i} className="flex-1 flex flex-col justify-center px-6 py-4 border-r last:border-r-0"
+                  style={{ borderColor: "var(--border)" }}>
+                  <span className="text-xs font-medium uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>{m.label}</span>
+                  <span className="text-3xl font-bold font-mono" style={{ color: m.color }}>{m.value}</span>
+                  <span className="text-xs mt-1" style={{ color: "var(--subtle)" }}>{m.sub}</span>
+                </div>
+              ))}
+            </div>
 
             {!hasLines ? (
               <div className="rounded-xl px-6 py-5 flex items-center justify-between"

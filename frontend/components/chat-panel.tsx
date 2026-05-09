@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Send, Loader2, MessageSquare } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
-type Message = { role: "user" | "johnny"; text: string };
+type Message = { role: "user" | "agent"; text: string };
 
 export default function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -28,7 +28,7 @@ export default function ChatPanel() {
       });
 
       if (!res.ok || !res.body) {
-        setMessages((prev) => [...prev, { role: "johnny", text: "Sorry, I couldn't get an answer right now." }]);
+        setMessages((prev) => [...prev, { role: "agent", text: "Sorry, I couldn't get an answer right now." }]);
         return;
       }
 
@@ -36,7 +36,7 @@ export default function ChatPanel() {
       const decoder = new TextDecoder();
       let accumulated = "";
 
-      setMessages((prev) => [...prev, { role: "johnny", text: "" }]);
+      setMessages((prev) => [...prev, { role: "agent", text: "" }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -44,13 +44,13 @@ export default function ChatPanel() {
         accumulated += decoder.decode(value, { stream: true });
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { role: "johnny", text: accumulated };
+          updated[updated.length - 1] = { role: "agent", text: accumulated };
           return updated;
         });
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     } catch {
-      setMessages((prev) => [...prev, { role: "johnny", text: "Sorry, I couldn't get an answer right now." }]);
+      setMessages((prev) => [...prev, { role: "agent", text: "Sorry, I couldn't get an answer right now." }]);
     } finally {
       setIsStreaming(false);
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -64,7 +64,7 @@ export default function ChatPanel() {
       {/* Header */}
       <div className="px-4 py-3 border-b flex items-center gap-2 shrink-0" style={{ borderColor: "var(--border)" }}>
         <span className="text-blue-400">✦</span>
-        <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>Ask Johnny</span>
+        <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>Ask the Agent</span>
         <MessageSquare size={13} style={{ color: "var(--muted)" }} className="ml-auto" />
       </div>
 
@@ -82,7 +82,7 @@ export default function ChatPanel() {
           <div key={i} className={`flex flex-col gap-0.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
             <span className="text-[10px] font-semibold uppercase tracking-wide"
               style={{ color: msg.role === "user" ? "#7a7870" : "#60a5fa" }}>
-              {msg.role === "user" ? "You" : "Johnny"}
+              {msg.role === "user" ? "You" : "Agent"}
             </span>
             <div className={`rounded-xl px-3 py-2 text-sm leading-relaxed max-w-[90%] whitespace-pre-wrap ${
               msg.role === "user"

@@ -107,11 +107,13 @@ export interface ChartDay {
   produced: number;
 }
 
-export interface Escalation {
+export interface AgentAlert {
   id: string;
-  triggered_at: string;
-  issue_detail: string;
+  detected_at: string;
+  alert_type: "stall" | "quality_spike";
+  station_name: string;
   severity: "critical" | "warning";
-  assigned_to: string;
-  status: "notified" | "pending";
+  stall_duration_mins: number | null;
+  resolved_at: string | null;
+  resolved_by: string | null;
 }
