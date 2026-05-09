@@ -5,6 +5,7 @@ import { Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useDemoMode } from "@/lib/demo-context";
 import { downloadCsv } from "@/lib/export-csv";
+import { apiFetch } from "@/lib/api";
 
 type StatusRow = {
   label: string;
@@ -82,6 +83,23 @@ export default function PartStatusTable() {
     const totalParts = parts?.length ?? 0;
 
     if (totalParts === 0) {
+      // Try new tables via shopfloor metrics API
+      const res = await apiFetch("/api/shopfloor/metrics");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.hasData && data.partStatus?.rows) {
+          // Merge API counts with STATUS_DEFS to satisfy the StatusRow shape
+          const apiRows = data.partStatus.rows as Array<{ label: string; now: number; today: number; thisWeek: number }>;
+          const merged = STATUS_DEFS.map((def) => {
+            const match = apiRows.find((r) => r.label === def.label);
+            return { ...def, now: match?.now ?? 0, today: match?.today ?? 0, thisWeek: match?.thisWeek ?? 0 };
+          });
+          setIsDemo(false);
+          setRows(merged);
+          setLoading(false);
+          return;
+        }
+      }
       setIsDemo(true);
       setRows(MOCK_ROWS);
       setLoading(false);

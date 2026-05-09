@@ -18,10 +18,9 @@ const ACTION_OPTIONS: { value: ActionStatus; label: string }[] = [
 
 const SOURCE_LABEL: Record<string, string> = {
   watchdog:   "Watchdog",
-  bottleneck: "Bottleneck",
+  production: "Production",
   quality:    "Quality",
   planning:   "Planning",
-  shift:      "Shift",
 };
 
 function timeAgo(iso: string): string {

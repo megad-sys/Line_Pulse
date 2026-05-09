@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 export interface UnifiedAlert {
   id: string;
-  source: "watchdog" | "bottleneck" | "quality" | "planning" | "shift";
+  source: "watchdog" | "production" | "quality" | "planning";
   detected_at: string;
   issue: string;
   severity: "critical" | "warning" | "info";
@@ -54,17 +54,15 @@ export async function GET() {
     const ran_at = latestRun.ran_at as string;
 
     const agentEntries: Array<{ key: keyof typeof agentSrcMap; issueField: string; sevField?: string }> = [
-      { key: "bottleneck", issueField: "recommendation", sevField: "severity" },
+      { key: "production", issueField: "recommendation", sevField: "severity" },
       { key: "quality",    issueField: "recommendation", sevField: "severity" },
       { key: "planning",   issueField: "recommendation" },
-      { key: "shift",      issueField: "top_priority" },
     ];
 
     const agentSrcMap = {
-      bottleneck: "bottleneck",
+      production: "production",
       quality:    "quality",
       planning:   "planning",
-      shift:      "shift",
     } as const;
 
     for (const { key, issueField, sevField } of agentEntries) {

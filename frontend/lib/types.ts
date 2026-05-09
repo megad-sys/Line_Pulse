@@ -107,14 +107,18 @@ export interface ChartDay {
   produced: number;
 }
 
-export interface BottleneckResult {
+export interface ProductionResult {
+  one_line_summary: string;
+  top_priority: string;
+  action_required: boolean;
+  handover_notes: string;
   worst_station: string;
   avg_cycle_mins: number;
   target_cycle_mins: number;
   bottleneck_score: number;
   severity: "critical" | "warning" | "ok";
   stall_detected: boolean;
-  stall_duration_mins: number;
+  stall_duration_mins: number | null;
   queue_depth: number;
   recommendation: string;
 }
@@ -146,13 +150,6 @@ export interface PlanningResult {
   recommendation: string;
 }
 
-export interface ShiftResult {
-  one_line_summary: string;
-  top_priority: string;
-  action_required: boolean;
-  handover_notes: string;
-}
-
 export interface OrchestratorResult {
   computed_at: string;
   shift_id: string;
@@ -163,10 +160,9 @@ export interface OrchestratorResult {
     hours_remaining: number;
   };
   agents: {
-    bottleneck: BottleneckResult | { error: string };
+    production: ProductionResult | { error: string };
     quality: QualityResult | { error: string };
     planning: PlanningResult | { error: string };
-    shift: ShiftResult | { error: string };
   };
 }
 

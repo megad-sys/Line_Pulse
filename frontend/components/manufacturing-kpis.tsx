@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockMfgKpis } from "@/lib/mock-data";
+import { apiFetch } from "@/lib/api";
 import type { ManufacturingKPIs } from "@/lib/types";
 
 type CardColor = "green" | "amber" | "red" | "blue";
@@ -93,7 +94,14 @@ async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
   const scrapped = allParts.filter((p) => p.current_status === "scrapped").length;
   const failed   = allParts.filter((p) => p.current_status === "failed_qc").length;
 
-  if (total === 0) return mockMfgKpis;
+  if (total === 0) {
+    const res = await apiFetch("/api/shopfloor/metrics");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.hasData && data.mfgKpis) return data.mfgKpis as ManufacturingKPIs;
+    }
+    return mockMfgKpis;
+  }
 
   const failedIds = new Set(allScans.filter((s) => s.status === "failed_qc").map((s) => s.part_id));
   const fpy = Math.round(((total - failedIds.size) / total) * 1000) / 10;

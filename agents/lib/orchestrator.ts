@@ -1,8 +1,7 @@
 import { buildAgentContext } from "./compute";
-import { runBottleneckAgent, type BottleneckResult } from "./agents/bottleneck";
+import { runProductionAgent, type ProductionResult } from "./agents/production";
 import { runQualityAgent,    type QualityResult    } from "./agents/quality";
 import { runPlanningAgent,   type PlanningResult   } from "./agents/planning";
-import { runShiftAgent,      type ShiftResult      } from "./agents/shift";
 
 type AgentError = { error: string };
 
@@ -10,15 +9,14 @@ export interface OrchestratorResult {
   computed_at: string;
   shift_id: string;
   context_summary: {
-    stations_count:    number;
-    units_completed:   number;
-    hours_remaining:   number;
+    stations_count:  number;
+    units_completed: number;
+    hours_remaining: number;
   };
   agents: {
-    bottleneck: BottleneckResult | AgentError;
+    production: ProductionResult | AgentError;
     quality:    QualityResult    | AgentError;
     planning:   PlanningResult   | AgentError;
-    shift:      ShiftResult      | AgentError;
   };
 }
 
@@ -35,11 +33,10 @@ async function safeRun<T>(fn: () => Promise<T>): Promise<T | AgentError> {
 export async function runOrchestrator(shiftId: string): Promise<OrchestratorResult> {
   const context = await buildAgentContext(shiftId);
 
-  const [bottleneck, quality, planning, shift] = await Promise.all([
-    safeRun(() => runBottleneckAgent(context)),
+  const [production, quality, planning] = await Promise.all([
+    safeRun(() => runProductionAgent(context)),
     safeRun(() => runQualityAgent(context)),
     safeRun(() => runPlanningAgent(context)),
-    safeRun(() => runShiftAgent(context)),
   ]);
 
   return {
@@ -50,6 +47,6 @@ export async function runOrchestrator(shiftId: string): Promise<OrchestratorResu
       units_completed: context.shift.units_completed_total,
       hours_remaining: context.shift.hours_remaining,
     },
-    agents: { bottleneck, quality, planning, shift },
+    agents: { production, quality, planning },
   };
 }

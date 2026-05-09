@@ -5,10 +5,9 @@ import { Loader2, RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, TrendingU
 import { apiFetch } from "@/lib/api";
 import type {
   OrchestratorResult,
-  BottleneckResult,
+  ProductionResult,
   QualityResult,
   PlanningResult,
-  ShiftResult,
 } from "@/lib/types";
 
 // ── helpers ────────────────────────────────────────────────────────
@@ -166,10 +165,9 @@ export default function ShiftAnalysisPanel() {
     }
   }, []);
 
-  const b = result && !isError(result.agents.bottleneck) ? result.agents.bottleneck as BottleneckResult : null;
-  const q = result && !isError(result.agents.quality)    ? result.agents.quality    as QualityResult    : null;
-  const p = result && !isError(result.agents.planning)   ? result.agents.planning   as PlanningResult   : null;
-  const s = result && !isError(result.agents.shift)      ? result.agents.shift      as ShiftResult      : null;
+  const prod = result && !isError(result.agents.production) ? result.agents.production as ProductionResult : null;
+  const q    = result && !isError(result.agents.quality)    ? result.agents.quality    as QualityResult    : null;
+  const p    = result && !isError(result.agents.planning)   ? result.agents.planning   as PlanningResult   : null;
 
   return (
     <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
@@ -202,10 +200,10 @@ export default function ShiftAnalysisPanel() {
       {!result && !loading && !error && (
         <div className="px-5 py-10 text-center">
           <p className="text-sm" style={{ color: "var(--muted)" }}>
-            Click <strong>Run Analysis</strong> to analyse the current shift with all 4 agents.
+            Click <strong>Run Analysis</strong> to analyse the current shift with all 3 agents.
           </p>
           <p className="text-xs mt-1" style={{ color: "var(--subtle)" }}>
-            Bottleneck · Quality · Planning · Shift summary — runs in parallel (~5 sec)
+            Production · Quality · Planning — runs in parallel (~5 sec)
           </p>
         </div>
       )}
@@ -213,8 +211,8 @@ export default function ShiftAnalysisPanel() {
       {loading && (
         <div className="flex flex-col items-center gap-3 px-5 py-10" style={{ color: "var(--muted)" }}>
           <Loader2 size={20} className="animate-spin text-blue-400" />
-          <p className="text-sm">Running 4 agents in parallel…</p>
-          <p className="text-xs" style={{ color: "var(--subtle)" }}>Bottleneck · Quality · Planning · Shift</p>
+          <p className="text-sm">Running 3 agents in parallel…</p>
+          <p className="text-xs" style={{ color: "var(--subtle)" }}>Production · Quality · Planning</p>
         </div>
       )}
 
@@ -229,38 +227,34 @@ export default function ShiftAnalysisPanel() {
       {result && !loading && (
         <div className="divide-y" style={{ borderColor: "var(--border)" }}>
 
-          {/* SHIFT */}
-          {s && (
-            <AgentRow label="Shift">
-              <p className="text-sm font-medium leading-snug" style={{ color: "var(--text)" }}>{s.one_line_summary}</p>
-              {s.top_priority && (
-                <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {s.top_priority}</p>
+          {/* PRODUCTION (shift summary + bottleneck) */}
+          {prod && (
+            <AgentRow label="Production">
+              {/* Shift summary */}
+              <p className="text-sm font-medium leading-snug" style={{ color: "var(--text)" }}>{prod.one_line_summary}</p>
+              {prod.top_priority && (
+                <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {prod.top_priority}</p>
               )}
-              {s.handover_notes && (
-                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{s.handover_notes}</p>
+              {prod.handover_notes && (
+                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{prod.handover_notes}</p>
               )}
-              <AgentChat agentLabel="Shift" contextSummary={
-                `${s.one_line_summary}. Top priority: ${s.top_priority}. Action required: ${s.action_required}.`
-              } />
-            </AgentRow>
-          )}
 
-          {/* BOTTLENECK */}
-          {b && (
-            <AgentRow label="Bottleneck">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{b.worst_station}</span>
-                <SeverityBadge severity={b.severity} />
-                <span className="text-xs font-mono" style={{ color: "var(--muted)" }}>score {b.bottleneck_score}</span>
+              {/* Bottleneck details */}
+              <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
+                <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--subtle)" }}>Bottleneck</span>
+                <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>{prod.worst_station}</span>
+                <SeverityBadge severity={prod.severity} />
+                <span className="text-xs font-mono" style={{ color: "var(--muted)" }}>score {prod.bottleneck_score}</span>
               </div>
-              <p className="text-xs" style={{ color: "var(--muted)" }}>
-                {b.avg_cycle_mins.toFixed(1)} min avg · target {b.target_cycle_mins} min
-                {b.queue_depth > 0 && ` · ${b.queue_depth} in queue`}
-                {b.stall_detected && ` · stalled ${b.stall_duration_mins.toFixed(0)} min`}
+              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+                {prod.avg_cycle_mins.toFixed(1)} min avg · target {prod.target_cycle_mins} min
+                {prod.queue_depth > 0 && ` · ${prod.queue_depth} in queue`}
+                {prod.stall_detected && prod.stall_duration_mins != null && ` · stalled ${prod.stall_duration_mins.toFixed(0)} min`}
               </p>
-              <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {b.recommendation}</p>
-              <AgentChat agentLabel="Bottleneck" contextSummary={
-                `${b.worst_station} is the bottleneck. Avg cycle ${b.avg_cycle_mins.toFixed(1)} min vs target ${b.target_cycle_mins} min. Score: ${b.bottleneck_score}. Severity: ${b.severity}. Queue: ${b.queue_depth}. Recommendation: ${b.recommendation}`
+              <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {prod.recommendation}</p>
+
+              <AgentChat agentLabel="Production" contextSummary={
+                `${prod.one_line_summary}. Bottleneck: ${prod.worst_station} at ${prod.avg_cycle_mins.toFixed(1)} min vs target ${prod.target_cycle_mins} min. Score: ${prod.bottleneck_score}. Severity: ${prod.severity}. Queue: ${prod.queue_depth}. Recommendation: ${prod.recommendation}`
               } />
             </AgentRow>
           )}

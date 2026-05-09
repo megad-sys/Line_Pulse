@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export type StationRow = {
   station_name: string;
@@ -50,6 +50,94 @@ const MOCK_LINES: LineStatus[] = [
   },
 ];
 
+// ── New-table fallback ─────────────────────────────────────────
+
+const STATION_ORDER = ["SMT Assembly", "Soldering", "Visual Inspection", "Functional Test", "Packaging"];
+
+async function fetchFromNewTables(): Promise<StationStatusResponse | null> {
+  const db = createServiceClient();
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data: latestShift } = await db
+    .from("shifts")
+    .select("id")
+    .order("start_time", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!latestShift) return null;
+
+  const [{ data: events }, { data: configs }] = await Promise.all([
+    db
+      .from("scan_events")
+      .select("part_id, station_name, scan_type, scanned_at")
+      .eq("shift_id", latestShift.id)
+      .order("scanned_at", { ascending: true }),
+    db.from("station_config").select("station_name, target_cycle_mins"),
+  ]);
+
+  const rows = events ?? [];
+  if (rows.length === 0) return null;
+
+  const targetMap = new Map<string, number>(
+    (configs ?? []).map((c) => [c.station_name, Number(c.target_cycle_mins)])
+  );
+
+  const stationNames = Array.from(new Set(rows.map((r) => r.station_name)));
+
+  const stations: StationRow[] = stationNames.map((station) => {
+    const sRows = rows.filter((r) => r.station_name === station);
+    const target = targetMap.get(station) ?? 10;
+    const entries = new Map<string, string>();
+    const cycleMins: number[] = [];
+    let defect_count = 0;
+
+    for (const row of sRows) {
+      if (row.scan_type === "entry" && row.part_id) {
+        entries.set(row.part_id, row.scanned_at);
+      } else if (row.scan_type === "exit" && row.part_id) {
+        const entryTime = entries.get(row.part_id);
+        if (entryTime) {
+          cycleMins.push((new Date(row.scanned_at).getTime() - new Date(entryTime).getTime()) / 60000);
+          entries.delete(row.part_id);
+        }
+      } else if (row.scan_type === "defect") {
+        defect_count++;
+      }
+    }
+
+    const avg_cycle_mins =
+      cycleMins.length >= 3
+        ? Math.round((cycleMins.reduce((s, v) => s + v, 0) / cycleMins.length) * 10) / 10
+        : null;
+
+    const completed_today = sRows.filter(
+      (r) => r.scan_type === "exit" && new Date(r.scanned_at) >= todayStart
+    ).length;
+
+    const seqIdx = STATION_ORDER.indexOf(station);
+    return {
+      station_name:    station,
+      sequence_order:  seqIdx === -1 ? 999 : seqIdx,
+      target_mins:     target,
+      parts_here:      entries.size,
+      rework_parts:    defect_count,
+      completed_today,
+      avg_cycle_mins,
+    };
+  });
+
+  stations.sort((a, b) => a.sequence_order - b.sequence_order);
+  const total_wip = stations.reduce((s, r) => s + r.parts_here, 0);
+
+  return {
+    lines: [{ line_id: "demo-line-1", line_name: "Assembly Line", stations, total_wip }],
+    isDemo: false,
+  };
+}
+
 // ── Route ──────────────────────────────────────────────────────
 
 export async function GET() {
@@ -92,6 +180,11 @@ export async function GET() {
   ]);
 
   if (!lines || lines.length === 0) {
+    // Try new tables (scan_events / station_config)
+    const newTableResult = await fetchFromNewTables();
+    if (newTableResult) {
+      return NextResponse.json(newTableResult satisfies StationStatusResponse);
+    }
     return NextResponse.json({ lines: MOCK_LINES, isDemo: true } satisfies StationStatusResponse);
   }
 
