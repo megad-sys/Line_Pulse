@@ -34,9 +34,9 @@ const STATIONS = [
 ];
 
 const WORK_ORDERS = [
-  { wo_number: "WO-DEMO-001", part_number: "PCB Control Unit",   qty: 50, customer: "Siemens AG",  priority: 8, cp: "critical" },
-  { wo_number: "WO-DEMO-002", part_number: "Sensor Array Rev2", qty: 40, customer: "ZF Group",     priority: 5, cp: "high"     },
-  { wo_number: "WO-DEMO-003", part_number: "Motor Controller",  qty: 60, customer: "Bosch AG",     priority: 3, cp: "normal"   },
+  { wo_number: "WO-DEMO-001", part_number: "PCB Control Unit",   qty: 50, customer: "Siemens AG",  priority: "urgent", cp: "critical" },
+  { wo_number: "WO-DEMO-002", part_number: "Sensor Array Rev2", qty: 40, customer: "ZF Group",     priority: "high",   cp: "high"     },
+  { wo_number: "WO-DEMO-003", part_number: "Motor Controller",  qty: 60, customer: "Bosch AG",     priority: "medium", cp: "normal"   },
 ] as const;
 
 const OPERATORS = ["OP-001", "OP-002", "OP-003"];

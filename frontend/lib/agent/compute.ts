@@ -200,6 +200,11 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
   };
 }
 
+function textPriorityToNumber(p: unknown): number {
+  const map: Record<string, number> = { urgent: 10, high: 7, medium: 5, low: 3 };
+  return map[String(p)] ?? 5;
+}
+
 // ── getWorkOrderStatus ────────────────────────────────────────
 
 export async function getWorkOrderStatus(shiftId: string): Promise<WorkOrderStatus[]> {
@@ -261,7 +266,7 @@ export async function getWorkOrderStatus(shiftId: string): Promise<WorkOrderStat
       last_scan_at,
       is_stalled,
       minutes_since_last_scan,
-      priority: wo.priority ?? 5,
+      priority: textPriorityToNumber(wo.priority),
       due_date: wo.due_date ?? null,
       customer_priority: (wo.customer_priority as "critical" | "high" | "normal") ?? "normal",
     };
