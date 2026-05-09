@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm install && cd ../agents && npm install",
+  "installCommand": "npm install && npm install --prefix ../agents",
   "crons": [
     {
       "path": "/api/agent",
