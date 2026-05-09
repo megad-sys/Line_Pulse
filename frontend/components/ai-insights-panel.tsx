@@ -55,7 +55,7 @@ export default function AIInsightsPanel() {
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div className="flex items-center gap-2">
           <span className="text-blue-400">✦</span>
-          <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>Agent Insights</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>Insights</span>
           {insights.length > 0 && (
             <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: "var(--surface2)", color: "var(--muted)" }}>
               {insights.length}

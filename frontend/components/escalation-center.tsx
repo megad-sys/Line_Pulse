@@ -89,7 +89,7 @@ export default function EscalationCenter() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold" style={{ color: "var(--muted)" }}>Agent Alerts</h3>
+        <h3 className="text-sm font-semibold" style={{ color: "var(--muted)" }}>Alerts</h3>
         {alerts.length > 0 && (
           <button
             onClick={handleExport}
