@@ -21,7 +21,10 @@
     "paths": {
       "@/*": ["./*"],
       "@agents": ["../agents/lib"],
-      "@agents/*": ["../agents/lib/*"]
+      "@agents/*": ["../agents/lib/*"],
+      "groq-sdk": ["./node_modules/groq-sdk"],
+      "zod": ["./node_modules/zod"],
+      "@supabase/supabase-js": ["./node_modules/@supabase/supabase-js"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
