@@ -68,12 +68,12 @@ async function main() {
   }
   console.log("✓ 5 stations configured");
 
-  // ── Create shift (today, 06:00–14:00) ─────────────────────
+  // ── Create shift (today, 06:00–23:59) ─────────────────────
   const today = new Date();
   const shiftStart = new Date(today);
   shiftStart.setHours(6, 0, 0, 0);
   const shiftEnd = new Date(today);
-  shiftEnd.setHours(14, 0, 0, 0);
+  shiftEnd.setHours(23, 59, 0, 0);
 
   const { data: shift, error: shiftErr } = await db
     .from("shifts")
