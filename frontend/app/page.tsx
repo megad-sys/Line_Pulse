@@ -73,23 +73,24 @@ function LandingNav() {
   );
 }
 
-function Hero() {
+function Product() {
   return (
     <section className="relative pt-24 pb-24 sm:pt-32 sm:pb-28">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
-            <MonoLabel>Johnny on the Spot — your autonomous AI production agent</MonoLabel>
+            <MonoLabel>AI AGENTS FOR MANUFACTURING</MonoLabel>
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-[#1a1916] sm:text-6xl md:text-7xl">
-              The AI agent watching your production line — so you don&apos;t have to.
+              AI agents that monitor your production lines.
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              Johnny — your autonomous AI production agent — runs in the background monitoring every station,
-              detecting every bottleneck, and routing every issue to the right person. No dashboard-checking required.
+              LinePulse connects to your existing systems or deploys its own tracking system.
+              AI agents monitor your lines continuously, detect problems, and tell your team
+              exactly what to do next.
             </p>
           </Reveal>
           <Reveal delay={240}>
@@ -102,7 +103,7 @@ function Hero() {
           </Reveal>
           <Reveal delay={320}>
             <p className="mt-6 text-sm text-[#9a9688]">
-              No hardware required &nbsp;·&nbsp; Live in one afternoon &nbsp;·&nbsp; Autonomous AI agent included
+              No hardware required &nbsp;·&nbsp; Live in one afternoon &nbsp;·&nbsp; Works with QR, CSV, or ERP
             </p>
           </Reveal>
         </div>
@@ -121,7 +122,7 @@ function DashboardMockup() {
       icon: "🔴",
       text: (
         <>
-          <span className="font-semibold">Visual Inspection is your bottleneck</span> — 14.8 min avg vs 10 min target
+          <span className="font-semibold">Visual Inspection is your bottleneck</span> — 14.8 min avg vs 6.4 min target
         </>
       ),
     },
@@ -154,7 +155,7 @@ function DashboardMockup() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-white/70">
           <span className="text-blue-400">✦</span>
-          <span className="font-mono text-xs uppercase tracking-widest">Johnny on the Spot</span>
+          <span className="font-mono text-xs uppercase tracking-widest">LinePulse Agent</span>
         </div>
         <div className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
@@ -259,13 +260,13 @@ function Solution() {
     },
     {
       icon: "◎",
-      title: "Johnny detects. Johnny decides.",
-      body: "Every 15 minutes, Johnny analyses your full production state — cycle times, QC rates, station queues — and decides what needs action. He doesn't wait to be asked.",
+      title: "Agent computes. Agent acts.",
+      body: "Every 15 minutes, the agent analyses your full production state — cycle times, QC rates, station queues — and decides what needs action. It doesn't wait to be asked.",
     },
     {
       icon: "↗",
       title: "Routes the right action to the right person.",
-      body: "When Johnny detects a bottleneck, a QC spike, or a delayed work order, he routes a specific action to the right person — shift lead, QC manager, or production director — automatically.",
+      body: "When the agent detects a bottleneck, a QC spike, or a delayed work order, it routes a specific action to the right person — shift lead, QC manager, or production director — automatically.",
     },
   ];
   return (
@@ -282,8 +283,8 @@ function Solution() {
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              Workers scan a QR code at each station. Johnny processes every scan, detects every anomaly,
-              and takes action — automatically. No one needs to open a dashboard for Johnny to do his job.
+              Workers scan a QR code at each station. The agent processes every scan, detects every anomaly,
+              and takes action — automatically. No one needs to open a dashboard for the agent to do its job.
             </p>
           </Reveal>
         </div>
@@ -306,10 +307,26 @@ function Solution() {
 
 function HowItWorks() {
   const steps = [
-    { n: "01", title: "Set up your line",  body: "Add your production line and stations. Takes 5 minutes." },
-    { n: "02", title: "Print QR labels",   body: "Create a batch of parts. Print labels on your office printer." },
-    { n: "03", title: "Workers scan",      body: "Workers scan QR at each station with their phone. No training needed." },
-    { n: "04", title: "Johnny takes over",  body: "Johnny monitors your floor autonomously — every 15 minutes, every shift, every day. He detects issues, creates escalations, and notifies the right people without anyone checking a screen." },
+    {
+      n: "01",
+      title: "Connect your data",
+      body: "Use QR codes, upload a CSV production plan, or connect your existing ERP or MES system. LinePulse works with what you already have.",
+    },
+    {
+      n: "02",
+      title: "Data structures itself",
+      body: "Raw events become cycle times, throughput, WIP, and defect rates — automatically.",
+    },
+    {
+      n: "03",
+      title: "Agents monitor",
+      body: "AI agents watch every production line continuously, detecting bottlenecks, flagging quality spikes, planning your resources, and keeping your plan on track.",
+    },
+    {
+      n: "04",
+      title: "Your team acts",
+      body: "Agents surface the right action to the right person. Humans decide. Machine-speed awareness, human control.",
+    },
   ];
   return (
     <section id="how" className="border-y border-[#E5E2DC] py-24 sm:py-28">
@@ -344,7 +361,7 @@ function HowItWorks() {
 function Features() {
   const features = [
     { title: "Real-time floor visibility",  body: "Parts tracked at every station, live." },
-    { title: "Johnny on the Spot",           body: "Your autonomous AI production agent — monitors your floor every 15 minutes and acts without being asked." },
+    { title: "AI Agents, not dashboards",   body: "LinePulse agents continuously monitor production activity — detecting bottlenecks and downtime patterns, surfacing quality issues, and highlighting what needs attention before problems escalate. Your team stays in control, with faster decisions and real-time operational awareness." },
     { title: "Automatic escalations",       body: "Right person notified when thresholds breach." },
     { title: "Manufacturing KPIs",          body: "OEE, FPY, DPMO, cycle time — calculated automatically." },
     { title: "No hardware required",        body: "Phone camera + office printer. That's it." },
@@ -386,13 +403,13 @@ function CTA() {
         <div className="mx-auto max-w-3xl text-center">
           <Reveal>
             <h2 className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
-              Meet Johnny. Your AI production agent — live this afternoon.
+              Your AI production agent — live this afternoon.
             </h2>
           </Reveal>
           <Reveal delay={80}>
             <p className="mx-auto mt-5 max-w-md text-lg text-white/60">
               Free 30-day pilot. No contract. No hardware. No consultant.
-              Johnny starts working the moment you print your first QR label.
+              The agent starts working the moment you connect your first data source.
             </p>
           </Reveal>
           <Reveal delay={160}>
@@ -418,14 +435,19 @@ function Footer() {
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
           <div>
             <div className="font-display text-lg font-bold text-[#1a1916]">Line Pulse</div>
-            <div className="mt-1 text-sm text-[#9a9688]">Powered by Johnny on the Spot, your AI production agent</div>
+            <div className="mt-1 text-sm text-[#9a9688]">Agentic AI for manufacturing.</div>
           </div>
           <nav className="flex items-center gap-7 text-sm">
             <a href="#" className="text-[#1a1916]/80 hover:text-[#1a1916]">Privacy Policy</a>
             <a href="mailto:hello@linepulse.com" className="text-[#1a1916]/80 hover:text-[#1a1916]">Contact</a>
           </nav>
         </div>
-        <div className="mt-10 border-t border-[#E5E2DC] pt-6 text-xs text-[#9a9688]">
+        <div className="mt-6">
+          <p className="font-mono text-xs text-[#9a9688]">
+            Works with QR tracking, CSV imports, and ERP/MES integrations.
+          </p>
+        </div>
+        <div className="mt-6 border-t border-[#E5E2DC] pt-6 text-xs text-[#9a9688]">
           © 2026 Line Pulse
         </div>
       </Container>
@@ -437,7 +459,7 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen bg-white text-[#1a1916]">
       <LandingNav />
-      <Hero />
+      <Product />
       <Problem />
       <Solution />
       <HowItWorks />

@@ -15,17 +15,21 @@
     "groq-sdk": "^1.1.2",
     "lucide-react": "^1.14.0",
     "next": "14.2.35",
+    "papaparse": "^5.4.1",
     "qrcode.react": "^4.2.0",
     "react": "^18",
     "react-dom": "^18",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/papaparse": "^5.3.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }

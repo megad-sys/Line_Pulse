@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DataSourceModal } from "@/components/data-source-modal";
 import { Suspense } from "react";
 import { LayoutGrid, BarChart2, Settings2, PenLine } from "lucide-react";
 import KpiCard from "@/components/kpi-card";
@@ -44,6 +45,8 @@ export default function DashboardTabs({
   const hasParts = isDemo ? true : serverHasParts;
 
   return (
+    <>
+    <DataSourceModal />
     <div className="flex gap-0 items-start">
 
       {/* ── Content area ──────────────────────────────────────── */}
@@ -159,5 +162,6 @@ export default function DashboardTabs({
         })}
       </div>
     </div>
+    </>
   );
 }

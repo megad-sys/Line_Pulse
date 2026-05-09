@@ -3,6 +3,10 @@
     {
       "path": "/api/agent",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/agent/watchdog",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
