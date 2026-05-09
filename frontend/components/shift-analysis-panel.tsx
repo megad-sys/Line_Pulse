@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Loader2, RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Loader2, RefreshCw, AlertCircle, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Minus, Send } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import type {
   OrchestratorResult,
@@ -43,6 +43,83 @@ function PriorityDot({ priority }: { priority: "critical" | "high" | "normal" })
   return <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 inline-block" style={{ backgroundColor: c }} />;
 }
 
+// ── per-agent mini chat ─────────────────────────────────────────────
+
+function AgentChat({ agentLabel, contextSummary }: { agentLabel: string; contextSummary: string }) {
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer]     = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function ask() {
+    const q = question.trim();
+    if (!q || streaming) return;
+    setQuestion("");
+    setAnswer("");
+    setStreaming(true);
+    try {
+      const res = await apiFetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: `[${agentLabel} context: ${contextSummary}]\n\nQuestion: ${q}`,
+        }),
+      });
+      if (!res.ok || !res.body) {
+        setAnswer(res.status === 401 ? "Sign in to use the chat." : "Could not get an answer right now.");
+        return;
+      }
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let acc = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += dec.decode(value, { stream: true });
+        setAnswer(acc);
+      }
+    } catch {
+      setAnswer("Could not get an answer right now.");
+    } finally {
+      setStreaming(false);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
+      {answer && (
+        <p className="text-xs mb-2 leading-relaxed whitespace-pre-wrap" style={{ color: "var(--muted)" }}>
+          {answer}
+          {streaming && <Loader2 size={10} className="inline animate-spin ml-1 text-blue-400" />}
+        </p>
+      )}
+      <div className="flex gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && ask()}
+          placeholder={`Ask about ${agentLabel.toLowerCase()}…`}
+          disabled={streaming}
+          className="flex-1 text-xs px-3 py-1.5 rounded-lg border outline-none transition-colors disabled:opacity-40"
+          style={{
+            backgroundColor: "var(--surface2)",
+            borderColor: "var(--border)",
+            color: "var(--text)",
+          }}
+        />
+        <button onClick={ask} disabled={streaming || !question.trim()}
+          className="px-2.5 py-1.5 rounded-lg text-xs transition-colors disabled:opacity-40"
+          style={{ backgroundColor: "#1d4ed8", color: "white" }}>
+          {streaming ? <Loader2 size={11} className="animate-spin" /> : <Send size={11} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── row wrapper ─────────────────────────────────────────────────────
 
 function AgentRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -61,10 +138,10 @@ function AgentRow({ label, children }: { label: string; children: React.ReactNod
 // ── main component ──────────────────────────────────────────────────
 
 export default function ShiftAnalysisPanel() {
-  const [result, setResult]   = useState<OrchestratorResult | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [result, setResult]       = useState<OrchestratorResult | null>(null);
+  const [loading, setLoading]     = useState(false);
   const [updatedAt, setUpdatedAt] = useState("");
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError]         = useState<string | null>(null);
 
   const runAnalysis = useCallback(async () => {
     setLoading(true);
@@ -77,7 +154,7 @@ export default function ShiftAnalysisPanel() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `HTTP ${res.status}`);
+        throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
       }
       const data: OrchestratorResult = await res.json();
       setResult(data);
@@ -152,7 +229,7 @@ export default function ShiftAnalysisPanel() {
       {result && !loading && (
         <div className="divide-y" style={{ borderColor: "var(--border)" }}>
 
-          {/* SHIFT summary */}
+          {/* SHIFT */}
           {s && (
             <AgentRow label="Shift">
               <p className="text-sm font-medium leading-snug" style={{ color: "var(--text)" }}>{s.one_line_summary}</p>
@@ -162,6 +239,9 @@ export default function ShiftAnalysisPanel() {
               {s.handover_notes && (
                 <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{s.handover_notes}</p>
               )}
+              <AgentChat agentLabel="Shift" contextSummary={
+                `${s.one_line_summary}. Top priority: ${s.top_priority}. Action required: ${s.action_required}.`
+              } />
             </AgentRow>
           )}
 
@@ -179,6 +259,9 @@ export default function ShiftAnalysisPanel() {
                 {b.stall_detected && ` · stalled ${b.stall_duration_mins.toFixed(0)} min`}
               </p>
               <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {b.recommendation}</p>
+              <AgentChat agentLabel="Bottleneck" contextSummary={
+                `${b.worst_station} is the bottleneck. Avg cycle ${b.avg_cycle_mins.toFixed(1)} min vs target ${b.target_cycle_mins} min. Score: ${b.bottleneck_score}. Severity: ${b.severity}. Queue: ${b.queue_depth}. Recommendation: ${b.recommendation}`
+              } />
             </AgentRow>
           )}
 
@@ -196,6 +279,9 @@ export default function ShiftAnalysisPanel() {
                 {q.worst_station_defect_rate_pct.toFixed(1)}% defect rate at worst station · {q.total_defects} total defects · {q.overall_defect_rate_pct.toFixed(1)}% overall
               </p>
               <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {q.recommendation}</p>
+              <AgentChat agentLabel="Quality" contextSummary={
+                `Worst station: ${q.worst_station} at ${q.worst_station_defect_rate_pct.toFixed(1)}% defect rate. Total defects: ${q.total_defects}. Overall: ${q.overall_defect_rate_pct.toFixed(1)}%. Trend: ${q.trend}. Recommendation: ${q.recommendation}`
+              } />
             </AgentRow>
           )}
 
@@ -220,7 +306,6 @@ export default function ShiftAnalysisPanel() {
               <p className="text-xs mb-2" style={{ color: "var(--muted)" }}>
                 {p.projected_eod_units} projected · {p.planned_units} planned · {p.gap_units > 0 ? `${p.gap_units} unit gap` : "on track"}
               </p>
-
               {p.recommended_sequence.length > 0 && (
                 <div className="flex flex-col gap-1 mb-2">
                   {p.recommended_sequence.map((wo, i) => (
@@ -233,8 +318,10 @@ export default function ShiftAnalysisPanel() {
                   ))}
                 </div>
               )}
-
               <p className="text-xs font-medium" style={{ color: "#60a5fa" }}>→ {p.recommendation}</p>
+              <AgentChat agentLabel="Planning" contextSummary={
+                `Plan attainment: ${p.plan_attainment_pct.toFixed(0)}%. Projected EOD: ${p.projected_eod_units} vs ${p.planned_units} planned. Gap: ${p.gap_units} units. At risk: ${p.at_risk_work_orders.join(", ")}. Recommendation: ${p.recommendation}`
+              } />
             </AgentRow>
           )}
         </div>

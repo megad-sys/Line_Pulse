@@ -11,7 +11,6 @@ import ManufacturingKPIs from "@/components/manufacturing-kpis";
 import PlannedVsProduced from "@/components/planned-vs-produced";
 import EscalationCenter from "@/components/escalation-center";
 import CustomerLineSetup from "@/components/customer-line-setup";
-import ChatPanel from "@/components/chat-panel";
 import Whiteboard from "@/components/whiteboard";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockPartKpis } from "@/lib/mock-data";
@@ -135,16 +134,9 @@ export default function DashboardTabs({
 
         {/* ── Analytics tab ──────────────────────────────────── */}
         {activeTab === "analytics" && (
-          <div className="flex gap-5 items-start">
-            {/* Left: insights + escalations */}
-            <div className="flex-1 min-w-0 flex flex-col gap-6">
-              <ShiftAnalysisPanel />
-              <EscalationCenter />
-            </div>
-            {/* Right: chat panel */}
-            <div className="w-80 shrink-0 sticky top-4 self-start">
-              <ChatPanel />
-            </div>
+          <div className="flex flex-col gap-6">
+            <ShiftAnalysisPanel />
+            <EscalationCenter />
           </div>
         )}
 
