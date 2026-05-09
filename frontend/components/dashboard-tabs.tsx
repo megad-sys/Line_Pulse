@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { DataSourceModal } from "@/components/data-source-modal";
 import { LayoutGrid, BarChart2, Settings2, PenLine } from "lucide-react";
 import StationStatusTable from "@/components/station-status-table";
@@ -34,8 +35,19 @@ export default function DashboardTabs({
   serverHasLines: boolean;
   serverHasParts: boolean;
 }) {
-  const [activeTab, setActiveTab] = useState<Tab>("shopfloor");
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const t = searchParams.get("tab");
+    return (["shopfloor", "analytics", "setup", "whiteboard"].includes(t ?? "") ? t : "shopfloor") as Tab;
+  });
   const { isDemo } = useDemoMode();
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t && ["shopfloor", "analytics", "setup", "whiteboard"].includes(t)) {
+      setActiveTab(t as Tab);
+    }
+  }, [searchParams]);
 
   const kpis     = isDemo ? mockPartKpis : serverKpis;
   const hasLines = isDemo ? true : serverHasLines;

@@ -7,11 +7,11 @@ import { mockInsights } from "@/lib/mock-data";
 import { useDemoMode } from "@/lib/demo-context";
 import { apiFetch } from "@/lib/api";
 
-const CARD_CONFIG: Record<InsightType, { border: string; bg: string; icon: React.ReactNode; label: string; labelColor: string }> = {
-  critical: { border: "border-l-red-500",   bg: "bg-red-50/40",   icon: <AlertCircle   size={14} className="text-red-500   shrink-0 mt-0.5" />, label: "Critical", labelColor: "text-red-600"   },
-  warning:  { border: "border-l-amber-500", bg: "bg-amber-50/40", icon: <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />, label: "Warning",  labelColor: "text-amber-600" },
-  info:     { border: "border-l-blue-500",  bg: "bg-blue-50/40",  icon: <Info          size={14} className="text-blue-500  shrink-0 mt-0.5" />, label: "Info",     labelColor: "text-blue-600"  },
-  positive: { border: "border-l-green-500", bg: "bg-green-50/40", icon: <CheckCircle2  size={14} className="text-green-500 shrink-0 mt-0.5" />, label: "Good",     labelColor: "text-green-600" },
+const SEV_CONFIG: Record<InsightType, { icon: React.ReactNode; label: string; color: string; dot: string }> = {
+  critical: { icon: <AlertCircle  size={13} />, label: "Critical", color: "#f87171", dot: "bg-[#f87171]" },
+  warning:  { icon: <AlertTriangle size={13} />, label: "Warning",  color: "#fbbf24", dot: "bg-[#fbbf24]" },
+  info:     { icon: <Info          size={13} />, label: "Info",     color: "#60a5fa", dot: "bg-[#60a5fa]" },
+  positive: { icon: <CheckCircle2  size={13} />, label: "Good",     color: "#4ade80", dot: "bg-[#4ade80]" },
 };
 
 export default function AIInsightsPanel() {
@@ -50,45 +50,62 @@ export default function AIInsightsPanel() {
   }
 
   return (
-    <div className="rounded-xl p-6" style={{ backgroundColor: "var(--surface)", color: "var(--text)" }}>
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-blue-400 text-lg">✦</span>
-            <h2 className="text-lg font-bold tracking-tight">Agent Insights</h2>
-          </div>
-          <p className="text-sm text-gray-400">Monitoring your floor in real time</p>
+    <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+        <div className="flex items-center gap-2">
+          <span className="text-blue-400">✦</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>Agent Insights</span>
+          {insights.length > 0 && (
+            <span className="text-xs px-1.5 py-0.5 rounded font-mono" style={{ backgroundColor: "var(--surface2)", color: "var(--muted)" }}>
+              {insights.length}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {updatedAt && <span className="text-xs text-gray-500 font-mono">Updated {updatedAt}</span>}
+        <div className="flex items-center gap-3">
+          {updatedAt && <span className="text-xs font-mono" style={{ color: "var(--subtle)" }}>Updated {updatedAt}</span>}
           <button onClick={loadInsights} disabled={loading}
-            className="text-xs transition-colors px-2 py-1 rounded border"
+            className="text-xs px-2 py-1 rounded border transition-colors"
             style={{ color: "var(--muted)", borderColor: "var(--border)" }}>
-            {loading ? <Loader2 size={12} className="animate-spin" /> : "Refresh"}
+            {loading ? <Loader2 size={11} className="animate-spin" /> : "Refresh"}
           </button>
         </div>
       </div>
 
+      {/* Body */}
       {loading ? (
-        <div className="flex items-center gap-3 py-6 text-gray-500">
-          <Loader2 size={16} className="animate-spin text-blue-400" />
-          <p className="text-sm">Generating insights…</p>
+        <div className="flex items-center gap-3 px-5 py-8" style={{ color: "var(--muted)" }}>
+          <Loader2 size={14} className="animate-spin text-blue-400" />
+          <span className="text-sm">Generating insights…</span>
+        </div>
+      ) : insights.length === 0 ? (
+        <div className="px-5 py-8 text-center">
+          <p className="text-sm" style={{ color: "var(--muted)" }}>No insights yet — run the agent to analyse this shift.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div className="divide-y" style={{ borderColor: "var(--border)" }}>
           {insights.map((insight, i) => {
-            const { border, bg, icon, label, labelColor } = CARD_CONFIG[insight.type] ?? CARD_CONFIG.info;
+            const cfg = SEV_CONFIG[insight.type] ?? SEV_CONFIG.info;
             const detail = insight.detail ?? insight.body ?? "";
             return (
-              <div key={i} className={`border-l-4 ${border} ${bg} rounded-r-lg p-3.5 bg-white/5 border border-white/5`}>
-                <div className="flex items-start gap-2">
-                  {icon}
-                  <div className="flex-1 min-w-0">
-                    <span className={`text-xs font-semibold uppercase tracking-wide ${labelColor}`}>{label}</span>
-                    <p className="text-sm font-semibold text-white mt-1 mb-1.5 leading-snug">{insight.title}</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">{detail}</p>
-                    {insight.action && <p className="text-xs text-blue-400 mt-2 font-medium">→ {insight.action}</p>}
-                  </div>
+              <div key={i} className="flex items-start gap-4 px-5 py-3.5 hover:bg-[var(--surface2)] transition-colors">
+                {/* Severity indicator */}
+                <div className="flex items-center gap-1.5 shrink-0 pt-0.5 w-20">
+                  <span style={{ color: cfg.color }}>{cfg.icon}</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>
+                    {cfg.label}
+                  </span>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold leading-snug" style={{ color: "var(--text)" }}>{insight.title}</p>
+                  {detail && (
+                    <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "var(--muted)" }}>{detail}</p>
+                  )}
+                  {insight.action && (
+                    <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {insight.action}</p>
+                  )}
                 </div>
               </div>
             );

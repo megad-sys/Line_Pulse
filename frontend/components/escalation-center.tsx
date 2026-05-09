@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, CheckCheck } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import { createClient } from "@/lib/supabase/client";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockAgentAlerts } from "@/lib/mock-data";
@@ -22,9 +23,9 @@ function formatTime(iso: string): string {
 function formatIssue(alert: AgentAlert): string {
   if (alert.alert_type === "stall") {
     const dur = alert.stall_duration_mins
-      ? ` — ${Math.round(alert.stall_duration_mins)} min stall`
+      ? ` — ${Math.round(alert.stall_duration_mins)} min`
       : "";
-    return `Stall detected at ${alert.station_name}${dur}`;
+    return `Bottleneck at ${alert.station_name}${dur}`;
   }
   return `Quality spike at ${alert.station_name}`;
 }
@@ -33,6 +34,25 @@ export default function EscalationCenter() {
   const { isDemo } = useDemoMode();
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [resolving, setResolving] = useState<string | null>(null);
+
+  async function handleResolve(id: string) {
+    if (isDemo) {
+      setAlerts((prev) => prev.map((a) => a.id === id ? { ...a, resolved_at: new Date().toISOString(), resolved_by: "You" } : a));
+      return;
+    }
+    setResolving(id);
+    try {
+      await apiFetch(`/api/agent/alerts/${id}/resolve`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resolved_by: "dashboard" }),
+      });
+      setAlerts((prev) => prev.map((a) => a.id === id ? { ...a, resolved_at: new Date().toISOString(), resolved_by: "dashboard" } : a));
+    } finally {
+      setResolving(null);
+    }
+  }
 
   function handleExport() {
     downloadCsv(
@@ -137,11 +157,22 @@ export default function EscalationCenter() {
                   </td>
 
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${
-                      a.resolved_at ? "text-[#4ade80]" : "text-[#fbbf24]"
-                    }`}>
-                      {a.resolved_at ? "Resolved ✓" : "Active"}
-                    </span>
+                    {a.resolved_at ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#4ade80]">
+                        <CheckCheck size={11} /> Resolved
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleResolve(a.id)}
+                        disabled={resolving === a.id}
+                        className="text-xs px-2 py-1 rounded border transition-colors disabled:opacity-40"
+                        style={{ color: "var(--muted)", borderColor: "var(--border)" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}
+                      >
+                        {resolving === a.id ? "…" : "Resolve"}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

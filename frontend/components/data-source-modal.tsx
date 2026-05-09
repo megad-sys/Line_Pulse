@@ -32,7 +32,7 @@ export function DataSourceModal() {
 
   function handleQR() {
     dismiss();
-    router.push("/setup/stations");
+    router.push("/dashboard?tab=setup");
   }
 
   function handleERP() {
