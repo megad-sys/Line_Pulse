@@ -1,86 +1,79 @@
 import Groq from "groq-sdk";
 import { z } from "zod";
-import type { AgentContext } from "@/lib/agent/compute";
+import type { AgentContext } from "../compute";
 
 // ── System prompt ─────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a bottleneck detection agent for a manufacturing shop floor.
-You receive station metrics computed from QR scan timestamps.
+const SYSTEM_PROMPT = `You are a quality monitoring agent for a manufacturing shop floor.
+You receive defect data computed from QR scan events.
 
 Before giving your recommendation, reason through:
-- What is the magnitude of the problem (bottleneck_score, stall duration)?
-- What is likely causing it (cycle time vs target, queue depth)?
-- What options exist to address it this shift?
-- Which option best fits the current shift context?
+- Which station has the highest defect rate and by how much?
+- Is the overall defect rate acceptable (under 5%) or a problem?
+- What is the likely cause of defects at that station?
+- What one action would most reduce defects in the remaining shift hours?
 
 Respond ONLY in JSON matching this schema exactly:
 {
   "worst_station": string,
-  "avg_cycle_mins": number,
-  "target_cycle_mins": number,
-  "bottleneck_score": number,
+  "worst_station_defect_rate_pct": number,
+  "total_defects": number,
+  "overall_defect_rate_pct": number,
   "severity": "critical" | "warning" | "ok",
-  "stall_detected": boolean,
-  "stall_duration_mins": number | null,
-  "queue_depth": number,
+  "trend": "rising" | "stable" | "improving",
   "recommendation": string
 }
 
 Severity rules:
-- bottleneck_score > 200 → "critical"
-- bottleneck_score > 150 → "warning"
+- worst_station_defect_rate_pct > 15 → "critical"
+- worst_station_defect_rate_pct > 8  → "warning"
 - otherwise → "ok"
 
-Be specific and actionable. Never give generic advice.
-Name the exact station. Give one concrete recommendation only.
-Max 1 sentence for recommendation.`;
+Be specific and actionable. Name the exact station and the defect rate.
+One concrete recommendation, max 1 sentence.`;
+
+// TODO Phase 2: pass last 5 shifts defect history so trend is data-driven not inferred.
 
 // ── Output schema ─────────────────────────────────────────────
 
-const BottleneckSchema = z
-  .object({
-    worst_station:      z.string(),
-    avg_cycle_mins:     z.number(),
-    target_cycle_mins:  z.number(),
-    bottleneck_score:   z.number(),
-    severity:           z.enum(["critical", "warning", "ok"]),
-    stall_detected:     z.boolean(),
-    stall_duration_mins: z.number().nullable(),
-    queue_depth:        z.number(),
-    recommendation:     z.string(),
-  })
-  .refine(
-    (d) => {
-      if (d.bottleneck_score > 200) return d.severity === "critical";
-      if (d.bottleneck_score > 150) return d.severity === "warning";
-      return d.severity === "ok";
-    },
-    { message: "severity does not match bottleneck_score" }
-  );
+const QualitySchema = z.object({
+  worst_station:                 z.string(),
+  worst_station_defect_rate_pct: z.number(),
+  total_defects:                 z.number(),
+  overall_defect_rate_pct:       z.number(),
+  severity:                      z.enum(["critical", "warning", "ok"]),
+  trend:                         z.enum(["rising", "stable", "improving"]),
+  recommendation:                z.string(),
+});
 
-export type BottleneckResult = z.infer<typeof BottleneckSchema>;
+export type QualityResult = z.infer<typeof QualitySchema>;
 
 // ── Agent ─────────────────────────────────────────────────────
 
-export async function runBottleneckAgent(context: AgentContext): Promise<BottleneckResult> {
+export async function runQualityAgent(context: AgentContext): Promise<QualityResult> {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-  const payload = context.stations.map((s) => ({
-    station_name:        s.station_name,
-    target_cycle_mins:   s.target_cycle_mins,
-    avg_cycle_mins:      s.avg_cycle_mins,
-    bottleneck_score:    s.bottleneck_score,
-    units_completed:     s.units_completed,
-    queue_depth:         s.queue_depth,
-    stall_detected:      s.stall_detected,
-    stall_duration_mins: s.stall_duration_mins,
+  const stationQuality = context.stations.map((s) => ({
+    station_name:     s.station_name,
+    units_completed:  s.units_completed,
+    defect_count:     s.defect_count,
+    defect_rate_pct:  s.defect_rate_pct,
   }));
+
+  const payload = {
+    stations: stationQuality,
+    shift_totals: {
+      total_defects:           context.shift.total_defects,
+      overall_defect_rate_pct: context.shift.overall_defect_rate_pct,
+      units_completed_total:   context.shift.units_completed_total,
+    },
+  };
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
       { role: "system", content: SYSTEM_PROMPT },
-      { role: "user",   content: `Station data:\n${JSON.stringify(payload, null, 2)}\n\nReturn JSON only.` },
+      { role: "user",   content: `Quality data:\n${JSON.stringify(payload, null, 2)}\n\nReturn JSON only.` },
     ],
     response_format: { type: "json_object" },
     max_tokens: 500,
@@ -88,11 +81,11 @@ export async function runBottleneckAgent(context: AgentContext): Promise<Bottlen
   });
 
   const raw = completion.choices[0]?.message?.content ?? "{}";
-  return BottleneckSchema.parse(JSON.parse(raw));
+  return QualitySchema.parse(JSON.parse(raw));
 }
 
 // ── SELF TEST ─────────────────────────────────────────────────
-// Run: npx tsx lib/agent/agents/bottleneck.ts
+// Run: npx tsx lib/agent/agents/quality.ts
 // Requires: GROQ_API_KEY in environment
 
 import { fileURLToPath } from "url";
@@ -123,7 +116,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   };
 
   (async () => {
-    const result = await runBottleneckAgent(mockContext);
+    const result = await runQualityAgent(mockContext);
     console.log(JSON.stringify(result, null, 2));
   })();
 }

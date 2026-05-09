@@ -1,0 +1,13 @@
+{
+  "name": "linepulse",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "agents",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=frontend",
+    "dev": "npm run dev --workspace=frontend"
+  }
+}

@@ -1,8 +1,8 @@
-import { buildAgentContext } from "@/lib/agent/compute";
-import { runBottleneckAgent, type BottleneckResult } from "@/lib/agent/agents/bottleneck";
-import { runQualityAgent,    type QualityResult    } from "@/lib/agent/agents/quality";
-import { runPlanningAgent,   type PlanningResult   } from "@/lib/agent/agents/planning";
-import { runShiftAgent,      type ShiftResult      } from "@/lib/agent/agents/shift";
+import { buildAgentContext } from "./compute";
+import { runBottleneckAgent, type BottleneckResult } from "./agents/bottleneck";
+import { runQualityAgent,    type QualityResult    } from "./agents/quality";
+import { runPlanningAgent,   type PlanningResult   } from "./agents/planning";
+import { runShiftAgent,      type ShiftResult      } from "./agents/shift";
 
 type AgentError = { error: string };
 

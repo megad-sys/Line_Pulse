@@ -3,7 +3,7 @@
 
 import Groq from "groq-sdk";
 import { z } from "zod";
-import type { AgentContext } from "@/lib/agent/compute";
+import type { AgentContext } from "../compute";
 
 // ── System prompt ─────────────────────────────────────────────
 

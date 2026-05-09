@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { runOrchestrator } from "@/lib/agent/orchestrator";
+import { runOrchestrator } from "@agents/orchestrator";
 
 export async function POST(req: NextRequest) {
   const { shiftId } = await req.json();

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { getStationMetrics } from "@/lib/agent/compute";
+import { getStationMetrics } from "@agents/compute";
 
 export async function POST(req: NextRequest) {
   const auth = req.headers.get("authorization");
