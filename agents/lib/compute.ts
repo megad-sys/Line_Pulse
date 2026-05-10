@@ -14,6 +14,7 @@ export interface StationMetrics {
   defect_count: number;
   defect_rate_pct: number;
   bottleneck_score: number | null; // null if avg_cycle_mins is null
+  downtime_mins: number;           // sum of all downtime_start→end pairs at this station
 }
 
 export interface ShiftSummary {
@@ -26,6 +27,8 @@ export interface ShiftSummary {
   projected_eod_units: number;
   total_defects: number;
   overall_defect_rate_pct: number;
+  total_downtime_mins: number;     // sum of all station downtime events in the shift
+  availability_pct: number;        // (shift_duration_mins - total_downtime_mins) / shift_duration_mins × 100
 }
 
 // Layer 2 — Plan data (from work_orders) merged with execution progress
@@ -75,6 +78,7 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
       .from("scan_events")
       .select("station_name, scan_type, scanned_at, part_id")
       .eq("shift_id", shiftId)
+      .in("scan_type", ["entry", "exit", "defect", "downtime_start", "downtime_end"])
       .order("scanned_at", { ascending: true }),
     db.from("station_config").select("station_name, target_cycle_mins"),
   ]);
@@ -95,6 +99,10 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
     const entries = new Map<string, string>(); // part_id → scanned_at
     const cycleMins: number[] = [];
 
+    // Pair downtime_start→downtime_end (by order of occurrence at this station)
+    let pendingDowntimeStart: string | null = null;
+    let downtime_mins = 0;
+
     for (const row of stationRows) {
       if (row.scan_type === "entry" && row.part_id) {
         entries.set(row.part_id, row.scanned_at);
@@ -104,6 +112,11 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
           cycleMins.push(diffMins(entryTime, row.scanned_at));
           entries.delete(row.part_id);
         }
+      } else if (row.scan_type === "downtime_start") {
+        pendingDowntimeStart = row.scanned_at;
+      } else if (row.scan_type === "downtime_end" && pendingDowntimeStart) {
+        downtime_mins += diffMins(pendingDowntimeStart, row.scanned_at);
+        pendingDowntimeStart = null;
       }
     }
 
@@ -139,6 +152,7 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
       defect_count,
       defect_rate_pct: units_completed > 0 ? (defect_count / units_completed) * 100 : 0,
       bottleneck_score: avg_cycle_mins !== null ? (avg_cycle_mins / target) * 100 : null,
+      downtime_mins,
     };
   });
 }
@@ -154,7 +168,8 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
     db
       .from("scan_events")
       .select("scan_type, station_name, scanned_at")
-      .eq("shift_id", shiftId),
+      .eq("shift_id", shiftId)
+      .in("scan_type", ["entry", "exit", "defect", "downtime_start", "downtime_end"]),
     db
       .from("work_orders")
       .select("planned_qty")
@@ -181,6 +196,24 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
     hours_elapsed > 0 ? units_completed_total / hours_elapsed : 0;
   const projected = units_completed_total + throughput_per_hour * hours_remaining;
 
+  // Downtime: pair downtime_start→downtime_end events per station
+  const pendingDowntime: Record<string, string> = {}; // station_name → start scanned_at
+  let total_downtime_mins = 0;
+  for (const row of rows) {
+    if (row.scan_type === "downtime_start") {
+      pendingDowntime[row.station_name] = row.scanned_at;
+    } else if (row.scan_type === "downtime_end" && pendingDowntime[row.station_name]) {
+      total_downtime_mins += diffMins(pendingDowntime[row.station_name], row.scanned_at);
+      delete pendingDowntime[row.station_name];
+    }
+  }
+
+  const shift_duration_mins = (end.getTime() - start.getTime()) / 60000;
+  const availability_pct =
+    shift_duration_mins > 0
+      ? Math.max(0, (shift_duration_mins - total_downtime_mins) / shift_duration_mins) * 100
+      : 100;
+
   return {
     hours_elapsed,
     hours_remaining,
@@ -197,6 +230,8 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
       units_completed_total > 0
         ? (total_defects / units_completed_total) * 100
         : 0,
+    total_downtime_mins,
+    availability_pct,
   };
 }
 

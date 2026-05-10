@@ -124,13 +124,6 @@ async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
     ? Math.round(cycleMins.reduce((a, b) => a + b, 0) / cycleMins.length)
     : 0;
 
-  const quality = released / total;
-  const targetRate = 80 / 8;
-  const performance = shiftElapsedHours > 0
-    ? Math.min(1, (released / shiftElapsedHours) / targetRate)
-    : 0;
-  const oee = Math.round(quality * performance * 100);
-
   const scrapRate  = Math.round((scrapped / total) * 1000) / 10;
   const reworkRate = Math.round((failed / total) * 1000) / 10;
 
@@ -144,6 +137,16 @@ async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
       downtimeMins += (new Date(s.downtime_end).getTime() - new Date(s.downtime_start).getTime()) / 60_000;
     }
   }
+
+  const quality = released / total;
+  const targetRate = 80 / 8;
+  const performance = shiftElapsedHours > 0
+    ? Math.min(1, (released / shiftElapsedHours) / targetRate)
+    : 0;
+  const availability = shiftElapsedHours > 0
+    ? Math.max(0, 1 - downtimeMins / (shiftElapsedHours * 60))
+    : 1;
+  const oee = Math.round(availability * performance * quality * 100);
 
   return {
     oee, fpy, throughput, avgCycleTime,

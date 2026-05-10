@@ -130,6 +130,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       projected_eod_units: 90,
       total_defects: 8,
       overall_defect_rate_pct: 17.8,
+      total_downtime_mins: 18,
+      availability_pct: 92.5,
     },
     stations: [],
     work_orders: [

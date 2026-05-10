@@ -76,6 +76,7 @@ export async function GET() {
   // ── Station metrics ───────────────────────────────────────────
   const stationNames = Array.from(new Set(rows.map((r) => r.station_name)));
   const stationEntriesAtEnd = new Map<string, Map<string, string>>(); // station → partId → entryTime
+  let totalDowntimeMins = 0;
 
   const stationRows: StationRow[] = stationNames.map((station) => {
     const sRows = rows.filter((r) => r.station_name === station);
@@ -83,6 +84,8 @@ export async function GET() {
     const entries = new Map<string, string>(); // partId → entry scanned_at
     const cycleMins: number[] = [];
     let defect_count = 0;
+    let pendingDowntimeStart: string | null = null;
+    let station_downtime_mins = 0;
 
     for (const row of sRows) {
       if (row.scan_type === "entry" && row.part_id) {
@@ -95,9 +98,15 @@ export async function GET() {
         }
       } else if (row.scan_type === "defect") {
         defect_count++;
+      } else if (row.scan_type === "downtime_start") {
+        pendingDowntimeStart = row.scanned_at;
+      } else if (row.scan_type === "downtime_end" && pendingDowntimeStart) {
+        station_downtime_mins += (new Date(row.scanned_at).getTime() - new Date(pendingDowntimeStart).getTime()) / 60000;
+        pendingDowntimeStart = null;
       }
     }
 
+    totalDowntimeMins += station_downtime_mins;
     stationEntriesAtEnd.set(station, entries);
 
     const avg_cycle_mins =
@@ -217,12 +226,18 @@ export async function GET() {
     (configs ?? []).reduce((s, c) => s + Number(c.target_cycle_mins), 0)
   );
 
+  const shiftEnd = new Date(latestShift.end_time);
+  const shiftDurationMins = (shiftEnd.getTime() - shiftStart.getTime()) / 60000;
+  const availability = shiftDurationMins > 0
+    ? Math.max(0, (shiftDurationMins - totalDowntimeMins) / shiftDurationMins)
+    : 1;
+
   const quality = totalStarted > 0 ? (totalStarted - defectParts.size) / totalStarted : 1;
   const targetRate = targetCycleTime > 0 ? 60 / targetCycleTime : 0;
   const performance = hoursElapsed > 0 && targetRate > 0
     ? Math.min(1, (released / hoursElapsed) / targetRate)
     : 0;
-  const oee = Math.round(quality * performance * 100);
+  const oee = Math.round(availability * performance * quality * 100);
 
   const reworkRate = totalStarted > 0
     ? Math.round((defectParts.size / totalStarted) * 1000) / 10
@@ -240,7 +255,7 @@ export async function GET() {
     scrapRate:    0,
     reworkRate,
     dpmo,
-    downtimeMins: 0,
+    downtimeMins: Math.round(totalDowntimeMins),
     totalStarted,
     targetCycleTime,
   };
