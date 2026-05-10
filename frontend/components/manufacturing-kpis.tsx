@@ -70,7 +70,7 @@ function Skeleton() {
 function oeeColor(v: number): CardColor  { return v >= 85 ? "green" : v >= 65 ? "amber" : "red"; }
 function fpyColor(v: number): CardColor  { return v >= 95 ? "green" : v >= 85 ? "amber" : "red"; }
 function scrapColor(v: number): CardColor { return v < 2 ? "green" : v <= 5 ? "amber" : "red"; }
-function reworkColor(v: number): CardColor { return v < 5 ? "green" : v <= 10 ? "amber" : "red"; }
+function defectFlagColor(v: number): CardColor { return v < 5 ? "green" : v <= 10 ? "amber" : "red"; }
 function dpmoContext(v: number): string   { return v < 1000 ? "World class" : v < 10000 ? "Good" : "Needs improvement"; }
 
 async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
@@ -124,8 +124,8 @@ async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
     ? Math.round(cycleMins.reduce((a, b) => a + b, 0) / cycleMins.length)
     : 0;
 
-  const scrapRate  = Math.round((scrapped / total) * 1000) / 10;
-  const reworkRate = Math.round((failed / total) * 1000) / 10;
+  const scrapRate      = Math.round((scrapped / total) * 1000) / 10;
+  const defectFlagRate = Math.round((failed / total) * 1000) / 10;
 
   const stationCount = new Set(allScans.map((s) => s.station_name)).size || 1;
   const failedScans  = allScans.filter((s) => s.status === "failed_qc").length;
@@ -150,7 +150,7 @@ async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
 
   return {
     oee, fpy, throughput, avgCycleTime,
-    scrapRate, reworkRate, dpmo,
+    scrapRate, defectFlagRate, dpmo,
     downtimeMins: Math.round(downtimeMins),
     totalStarted: total,
     targetCycleTime: 32,
@@ -178,8 +178,8 @@ export default function ManufacturingKPIs() {
         <MfgCard title="First Pass Yield"   value={`${kpis.fpy}%`}                        sub="Parts right first time"           color={fpyColor(kpis.fpy)}   barPct={kpis.fpy} />
         <MfgCard title="Throughput"         value={`${kpis.throughput}`}                  sub="parts / hour"                     color="blue" />
         <MfgCard title="Avg Cycle Time"     value={`${kpis.avgCycleTime} min`}            sub={`vs ${kpis.targetCycleTime} min target`} color={cycleColor} barPct={Math.min(100, (kpis.avgCycleTime / kpis.targetCycleTime) * 100)} />
-        <MfgCard title="Scrap Rate"         value={`${kpis.scrapRate}%`}                  sub="Green <2% / Amber 2-5% / Red >5%" color={scrapColor(kpis.scrapRate)} />
-        <MfgCard title="Rework Rate"        value={`${kpis.reworkRate}%`}                 sub="Green <5% / Amber 5-10% / Red >10%" color={reworkColor(kpis.reworkRate)} />
+        <MfgCard title="Scrap Rate"          value={`${kpis.scrapRate}%`}                    sub="Green <2% / Amber 2-5% / Red >5%"   color={scrapColor(kpis.scrapRate)} />
+        <MfgCard title="Defect Flag Rate"   value={`${kpis.defectFlagRate}%`}               sub="Parts flagged with a defect scan"    color={defectFlagColor(kpis.defectFlagRate)} />
         <MfgCard title="DPMO"               value={kpis.dpmo.toLocaleString()}            sub="Defects per million opportunities" color={kpis.dpmo < 10000 ? "green" : "red"} context={dpmoContext(kpis.dpmo)} />
         <MfgCard title="Downtime Reported"  value={kpis.downtimeMins > 0 ? `${kpis.downtimeMins} min` : "0 min"} sub={kpis.downtimeMins > 0 ? "Total downtime today" : "None reported"} color={kpis.downtimeMins === 0 ? "green" : kpis.downtimeMins < 30 ? "amber" : "red"} />
       </div>

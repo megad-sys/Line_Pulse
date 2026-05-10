@@ -17,21 +17,19 @@ type StatusRow = {
 };
 
 const STATUS_DEFS: Omit<StatusRow, "now" | "today" | "thisWeek">[] = [
-  { label: "WIP",      dbStatus: ["wip"],       pill: "text-[#60a5fa] bg-[#60a5fa]/10 border-[#60a5fa]/20" },
-  { label: "Released", dbStatus: ["done"],      pill: "text-[#4ade80] bg-[#4ade80]/10 border-[#4ade80]/20" },
-  { label: "Rework",   dbStatus: [],            pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20" },
-  { label: "At QC",    dbStatus: [],            pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20" },
-  { label: "Failed",   dbStatus: ["failed_qc"], pill: "text-[#f87171] bg-[#f87171]/10 border-[#f87171]/20" },
-  { label: "On Hold",  dbStatus: ["scrapped"],  pill: "text-[var(--muted)] bg-[var(--border)] border-[var(--border)]"      },
+  { label: "WIP",      dbStatus: ["wip"],       pill: "text-[#60a5fa] bg-[#60a5fa]/10 border-[#60a5fa]/20"            },
+  { label: "Released", dbStatus: ["done"],      pill: "text-[#4ade80] bg-[#4ade80]/10 border-[#4ade80]/20"            },
+  { label: "Rework",   dbStatus: ["rework"],    pill: "text-[#fbbf24] bg-[#fbbf24]/10 border-[#fbbf24]/20"            },
+  { label: "Scrap",    dbStatus: ["scrapped"],  pill: "text-[#f87171] bg-[#f87171]/10 border-[#f87171]/20"            },
+  { label: "On Hold",  dbStatus: ["failed_qc"], pill: "text-[var(--muted)] bg-[var(--border)] border-[var(--border)]" },
 ];
 
 const MOCK_ROWS: StatusRow[] = [
   { ...STATUS_DEFS[0], now: 33, today: 8,  thisWeek: 61 },
   { ...STATUS_DEFS[1], now: 47, today: 47, thisWeek: 89 },
   { ...STATUS_DEFS[2], now: 4,  today: 4,  thisWeek: 9  },
-  { ...STATUS_DEFS[3], now: 6,  today: 6,  thisWeek: 14 },
-  { ...STATUS_DEFS[4], now: 2,  today: 2,  thisWeek: 5  },
-  { ...STATUS_DEFS[5], now: 1,  today: 0,  thisWeek: 1  },
+  { ...STATUS_DEFS[3], now: 1,  today: 1,  thisWeek: 3  },
+  { ...STATUS_DEFS[4], now: 2,  today: 0,  thisWeek: 2  },
 ];
 
 function Skeleton() {

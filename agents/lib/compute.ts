@@ -6,15 +6,15 @@ import { createServiceClient } from "./supabase";
 export interface StationMetrics {
   station_name: string;
   target_cycle_mins: number;
-  avg_cycle_mins: number | null;   // null if < 3 completed pairs
+  avg_cycle_mins: number | null;      // null if < 3 completed pairs
   units_completed: number;
-  queue_depth: number;
-  stall_detected: boolean;
-  stall_duration_mins: number | null;
+  wip_count: number;                  // parts with entry but no exit yet
+  bottleneck_detected: boolean;
+  bottleneck_duration_mins: number | null;
   defect_count: number;
   defect_rate_pct: number;
-  bottleneck_score: number | null; // null if avg_cycle_mins is null
-  downtime_mins: number;           // sum of all downtime_start→end pairs at this station
+  bottleneck_score: number | null;    // null if avg_cycle_mins is null
+  downtime_mins: number;              // sum of all downtime_start→end pairs at this station
 }
 
 export interface ShiftSummary {
@@ -120,6 +120,11 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
       }
     }
 
+    // Machine still down: include running duration in downtime
+    if (pendingDowntimeStart) {
+      downtime_mins += diffMins(pendingDowntimeStart, now);
+    }
+
     const units_completed = stationRows.filter((r) => r.scan_type === "exit").length;
     const defect_count = stationRows.filter((r) => r.scan_type === "defect").length;
     const avg_cycle_mins =
@@ -127,17 +132,18 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
         ? cycleMins.reduce((s, v) => s + v, 0) / cycleMins.length
         : null;
 
-    // Queue: parts with entry but no exit yet
-    const queue_depth = entries.size;
+    // WIP: parts with entry but no exit yet
+    const wip_count = entries.size;
 
-    // Stall: any queued part overdue by 1.5×
-    let stall_detected = false;
-    let worst_stall: number | null = null;
+    // Bottleneck: any queued part overdue by 1.5× after subtracting station downtime
+    let bottleneck_detected = false;
+    let worst_bottleneck: number | null = null;
     for (const entryTime of entries.values()) {
-      const elapsed = diffMins(entryTime, now);
+      const rawElapsed = diffMins(entryTime, now);
+      const elapsed = Math.max(0, rawElapsed - downtime_mins);
       if (elapsed > target * 1.5) {
-        stall_detected = true;
-        if (worst_stall === null || elapsed > worst_stall) worst_stall = elapsed;
+        bottleneck_detected = true;
+        if (worst_bottleneck === null || elapsed > worst_bottleneck) worst_bottleneck = elapsed;
       }
     }
 
@@ -146,9 +152,9 @@ export async function getStationMetrics(shiftId: string): Promise<StationMetrics
       target_cycle_mins: target,
       avg_cycle_mins,
       units_completed,
-      queue_depth,
-      stall_detected,
-      stall_duration_mins: worst_stall,
+      wip_count,
+      bottleneck_detected,
+      bottleneck_duration_mins: worst_bottleneck,
       defect_count,
       defect_rate_pct: units_completed > 0 ? (defect_count / units_completed) * 100 : 0,
       bottleneck_score: avg_cycle_mins !== null ? (avg_cycle_mins / target) * 100 : null,
@@ -206,6 +212,10 @@ export async function getShiftSummary(shiftId: string): Promise<ShiftSummary> {
       total_downtime_mins += diffMins(pendingDowntime[row.station_name], row.scanned_at);
       delete pendingDowntime[row.station_name];
     }
+  }
+  // Machines still down: include running duration in real-time availability
+  for (const startTime of Object.values(pendingDowntime)) {
+    total_downtime_mins += (now.getTime() - new Date(startTime).getTime()) / 60000;
   }
 
   const shift_duration_mins = (end.getTime() - start.getTime()) / 60000;

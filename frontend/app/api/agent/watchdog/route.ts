@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
     const stations = await getStationMetrics(shift.id);
 
     for (const station of stations) {
-      // ── Stall detection ──────────────────────────────────────
-      if (station.stall_detected && station.stall_duration_mins !== null) {
+      // ── Bottleneck detection ─────────────────────────────────
+      if (station.bottleneck_detected && station.bottleneck_duration_mins !== null) {
         const severity =
-          station.stall_duration_mins > station.target_cycle_mins * 2
+          station.bottleneck_duration_mins > station.target_cycle_mins * 2
             ? "critical"
             : "warning";
 
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         if (existing) {
           await db
             .from("agent_alerts")
-            .update({ stall_duration_mins: station.stall_duration_mins, severity })
+            .update({ stall_duration_mins: station.bottleneck_duration_mins, severity })
             .eq("id", existing.id);
           alerts_updated++;
         } else {
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
             alert_type: "stall",
             station_name: station.station_name,
             severity,
-            stall_duration_mins: station.stall_duration_mins,
+            stall_duration_mins: station.bottleneck_duration_mins,
           });
           alerts_created++;
         }

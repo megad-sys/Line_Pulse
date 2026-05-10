@@ -142,7 +142,7 @@ export default function StationStatusTable() {
 
         <div className="flex items-center gap-2">
           <button onClick={() => downloadCsv(`station-status-${activeLine.line_name}`,
-            ["Station", "Status", "Parts Here", "Completed Today", "Avg Cycle (min)", "Target (min)"],
+            ["Station", "Status", "WIP", "Completed Today", "Avg Cycle (min)", "Target (min)"],
             activeLine.stations.map((s) => [s.station_name, deriveStatus(s), s.parts_here, s.completed_today, s.avg_cycle_mins ?? "", s.target_mins]))}
             className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg transition-colors"
             style={{ color: "var(--muted)", border: "1px solid var(--border)" }}
@@ -158,7 +158,7 @@ export default function StationStatusTable() {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
-            {["Station", "Status", "Parts Here", "Progress", "Avg Cycle", "vs Target"].map((h) => (
+            {["Station", "Status", "WIP", "Progress", "Avg Cycle", "vs Target"].map((h) => (
               <th
                 key={h}
                 className="text-left text-xs font-medium px-4 py-2.5 uppercase tracking-wide first:pl-5"
@@ -235,7 +235,7 @@ export default function StationStatusTable() {
 
         <tfoot>
           <tr className="border-t" style={{ backgroundColor: "var(--surface2)", borderColor: "var(--border)" }}>
-            <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>Total in progress</td>
+            <td className="pl-5 pr-4 py-2.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>Total WIP</td>
             <td />
             <td className="px-4 py-2.5 text-xs font-bold" style={{ color: "var(--text)" }}>
               {activeLine.total_wip} {activeLine.total_wip === 1 ? "part" : "parts"}

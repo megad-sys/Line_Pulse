@@ -58,7 +58,7 @@ export async function GET() {
   const [{ data: events }, { data: configs }] = await Promise.all([
     db
       .from("scan_events")
-      .select("part_id, station_name, scan_type, scanned_at")
+      .select("part_id, station_name, scan_type, scanned_at, disposition")
       .eq("shift_id", shiftId)
       .order("scanned_at", { ascending: true }),
     db.from("station_config").select("station_name, target_cycle_mins"),
@@ -84,6 +84,7 @@ export async function GET() {
     const entries = new Map<string, string>(); // partId → entry scanned_at
     const cycleMins: number[] = [];
     let defect_count = 0;
+    let rework_from_disposition = 0;
     let pendingDowntimeStart: string | null = null;
     let station_downtime_mins = 0;
 
@@ -96,6 +97,7 @@ export async function GET() {
           cycleMins.push((new Date(row.scanned_at).getTime() - new Date(entryTime).getTime()) / 60000);
           entries.delete(row.part_id);
         }
+        if (row.disposition === "rework") rework_from_disposition++;
       } else if (row.scan_type === "defect") {
         defect_count++;
       } else if (row.scan_type === "downtime_start") {
@@ -104,6 +106,11 @@ export async function GET() {
         station_downtime_mins += (new Date(row.scanned_at).getTime() - new Date(pendingDowntimeStart).getTime()) / 60000;
         pendingDowntimeStart = null;
       }
+    }
+
+    // Machine still down: include running duration
+    if (pendingDowntimeStart) {
+      station_downtime_mins += (now.getTime() - new Date(pendingDowntimeStart).getTime()) / 60000;
     }
 
     totalDowntimeMins += station_downtime_mins;
@@ -123,7 +130,8 @@ export async function GET() {
       sequence_order:  stationSeq(station),
       target_mins:     target,
       parts_here:      entries.size,
-      rework_parts:    defect_count,
+      // Use disposition-based rework count when available, else fall back to defect scan count
+      rework_parts:    rework_from_disposition > 0 ? rework_from_disposition : defect_count,
       completed_today,
       avg_cycle_mins,
     };
@@ -157,12 +165,21 @@ export async function GET() {
   const defectPartsWeek     = partSet((r) => r.scan_type === "defect" && new Date(r.scanned_at) >= weekStart);
   const wipParts            = new Set([...allPartIds].filter((id) => !packagingExits.has(id)));
 
-  // At QC: parts currently queued at inspection stations
-  const atQcParts = new Set<string>();
-  for (const station of INSPECTION_STATIONS) {
-    const queued = stationEntriesAtEnd.get(station);
-    if (queued) for (const id of queued.keys()) atQcParts.add(id);
+  // Disposition-based part sets (when disposition column is populated)
+  const latestDisposition = new Map<string, string>(); // part_id → latest exit disposition
+  for (const row of rows) {
+    if (row.scan_type === "exit" && row.part_id && row.disposition) {
+      latestDisposition.set(row.part_id, row.disposition);
+    }
   }
+  const hasDispositionData = latestDisposition.size > 0;
+
+  const dispositionSets = {
+    released: hasDispositionData ? new Set([...latestDisposition.entries()].filter(([, d]) => d === "released").map(([id]) => id)) : packagingExits,
+    rework:   new Set([...latestDisposition.entries()].filter(([, d]) => d === "rework").map(([id]) => id)),
+    scrap:    new Set([...latestDisposition.entries()].filter(([, d]) => d === "scrap").map(([id]) => id)),
+    onHold:   new Set([...latestDisposition.entries()].filter(([, d]) => d === "on_hold").map(([id]) => id)),
+  };
 
   const PILL = {
     wip:    "text-[#60a5fa] bg-[#60a5fa]/10 border-[#60a5fa]/20",
@@ -172,14 +189,21 @@ export async function GET() {
     muted:  "text-[var(--muted)] bg-[var(--border)] border-[var(--border)]",
   };
 
-  const partRows: ShopfloorPartRow[] = [
-    { label: "WIP",      pill: PILL.wip,   now: wipParts.size,        today: wipParts.size,           thisWeek: allPartIds.size        },
-    { label: "Released", pill: PILL.green, now: packagingExits.size,  today: packagingExitsToday.size, thisWeek: packagingExitsWeek.size },
-    { label: "Rework",   pill: PILL.amber, now: defectParts.size,     today: defectPartsToday.size,    thisWeek: defectPartsWeek.size    },
-    { label: "At QC",    pill: PILL.amber, now: atQcParts.size,       today: atQcParts.size,           thisWeek: atQcParts.size           },
-    { label: "Failed",   pill: PILL.red,   now: defectParts.size,     today: defectPartsToday.size,    thisWeek: defectPartsWeek.size    },
-    { label: "On Hold",  pill: PILL.muted, now: 0,                    today: 0,                        thisWeek: 0                        },
-  ];
+  const partRows: ShopfloorPartRow[] = hasDispositionData
+    ? [
+        { label: "WIP",      pill: PILL.wip,   now: wipParts.size,                today: wipParts.size,                  thisWeek: allPartIds.size              },
+        { label: "Released", pill: PILL.green, now: dispositionSets.released.size, today: packagingExitsToday.size,       thisWeek: packagingExitsWeek.size       },
+        { label: "Rework",   pill: PILL.amber, now: dispositionSets.rework.size,   today: dispositionSets.rework.size,    thisWeek: dispositionSets.rework.size   },
+        { label: "Scrap",    pill: PILL.red,   now: dispositionSets.scrap.size,    today: dispositionSets.scrap.size,     thisWeek: dispositionSets.scrap.size    },
+        { label: "On Hold",  pill: PILL.muted, now: dispositionSets.onHold.size,   today: dispositionSets.onHold.size,    thisWeek: dispositionSets.onHold.size   },
+      ]
+    : [
+        { label: "WIP",      pill: PILL.wip,   now: wipParts.size,        today: wipParts.size,            thisWeek: allPartIds.size          },
+        { label: "Released", pill: PILL.green, now: packagingExits.size,  today: packagingExitsToday.size,  thisWeek: packagingExitsWeek.size  },
+        { label: "Rework",   pill: PILL.amber, now: defectParts.size,     today: defectPartsToday.size,     thisWeek: defectPartsWeek.size     },
+        { label: "Scrap",    pill: PILL.red,   now: 0,                    today: 0,                         thisWeek: 0                        },
+        { label: "On Hold",  pill: PILL.muted, now: 0,                    today: 0,                         thisWeek: 0                        },
+      ];
 
   const partTotal = {
     now:      partRows.reduce((s, r) => s + r.now, 0),
@@ -222,9 +246,11 @@ export async function GET() {
     ? Math.round(e2eTimes.reduce((s, v) => s + v, 0) / e2eTimes.length)
     : 0;
 
-  const targetCycleTime = Math.round(
-    (configs ?? []).reduce((s, c) => s + Number(c.target_cycle_mins), 0)
-  );
+  // Bottleneck station determines line rate: use max station target, not sum
+  const configList = configs ?? [];
+  const targetCycleTime = configList.length > 0
+    ? Math.round(Math.max(...configList.map((c) => Number(c.target_cycle_mins))))
+    : 0;
 
   const shiftEnd = new Date(latestShift.end_time);
   const shiftDurationMins = (shiftEnd.getTime() - shiftStart.getTime()) / 60000;
@@ -232,15 +258,22 @@ export async function GET() {
     ? Math.max(0, (shiftDurationMins - totalDowntimeMins) / shiftDurationMins)
     : 1;
 
-  const quality = totalStarted > 0 ? (totalStarted - defectParts.size) / totalStarted : 1;
+  // OEE Quality: use scrap disposition when available, else defect flag count
+  const scrapCount = hasDispositionData ? dispositionSets.scrap.size : defectParts.size;
+  const quality = totalStarted > 0 ? (totalStarted - scrapCount) / totalStarted : 1;
   const targetRate = targetCycleTime > 0 ? 60 / targetCycleTime : 0;
   const performance = hoursElapsed > 0 && targetRate > 0
     ? Math.min(1, (released / hoursElapsed) / targetRate)
     : 0;
   const oee = Math.round(availability * performance * quality * 100);
 
-  const reworkRate = totalStarted > 0
+  // Defect flag rate: parts that received any defect scan event
+  const defectFlagRate = totalStarted > 0
     ? Math.round((defectParts.size / totalStarted) * 1000) / 10
+    : 0;
+  // Scrap rate: parts confirmed scrapped via disposition (or 0 if no disposition data)
+  const scrapRate = totalStarted > 0 && hasDispositionData
+    ? Math.round((dispositionSets.scrap.size / totalStarted) * 1000) / 10
     : 0;
   const stationCount = stationNames.length || 1;
   const dpmo = totalStarted > 0
@@ -252,8 +285,8 @@ export async function GET() {
     fpy,
     throughput,
     avgCycleTime,
-    scrapRate:    0,
-    reworkRate,
+    scrapRate,
+    defectFlagRate,
     dpmo,
     downtimeMins: Math.round(totalDowntimeMins),
     totalStarted,

@@ -248,13 +248,13 @@ export default function ShiftAnalysisPanel() {
               </div>
               <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
                 {prod.avg_cycle_mins.toFixed(1)} min avg · target {prod.target_cycle_mins} min
-                {prod.queue_depth > 0 && ` · ${prod.queue_depth} in queue`}
-                {prod.stall_detected && prod.stall_duration_mins != null && ` · stalled ${prod.stall_duration_mins.toFixed(0)} min`}
+                {prod.wip_count > 0 && ` · ${prod.wip_count} WIP`}
+                {prod.bottleneck_detected && prod.bottleneck_duration_mins != null && ` · bottleneck ${prod.bottleneck_duration_mins.toFixed(0)} min`}
               </p>
               <p className="text-xs mt-1.5 font-medium" style={{ color: "#60a5fa" }}>→ {prod.recommendation}</p>
 
               <AgentChat agentLabel="Production" contextSummary={
-                `${prod.one_line_summary}. Bottleneck: ${prod.worst_station} at ${prod.avg_cycle_mins.toFixed(1)} min vs target ${prod.target_cycle_mins} min. Score: ${prod.bottleneck_score}. Severity: ${prod.severity}. Queue: ${prod.queue_depth}. Recommendation: ${prod.recommendation}`
+                `${prod.one_line_summary}. Bottleneck: ${prod.worst_station} at ${prod.avg_cycle_mins.toFixed(1)} min vs target ${prod.target_cycle_mins} min. Score: ${prod.bottleneck_score}. Severity: ${prod.severity}. WIP: ${prod.wip_count}. Recommendation: ${prod.recommendation}`
               } />
             </AgentRow>
           )}

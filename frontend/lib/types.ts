@@ -93,7 +93,7 @@ export interface ManufacturingKPIs {
   throughput: number;
   avgCycleTime: number;
   scrapRate: number;
-  reworkRate: number;
+  defectFlagRate: number;
   dpmo: number;
   downtimeMins: number;
   totalStarted: number;
@@ -117,9 +117,9 @@ export interface ProductionResult {
   target_cycle_mins: number;
   bottleneck_score: number;
   severity: "critical" | "warning" | "ok";
-  stall_detected: boolean;
-  stall_duration_mins: number | null;
-  queue_depth: number;
+  bottleneck_detected: boolean;
+  bottleneck_duration_mins: number | null;
+  wip_count: number;
   recommendation: string;
 }
 

@@ -23,9 +23,9 @@ Respond ONLY in JSON matching this schema exactly:
   "target_cycle_mins": number,
   "bottleneck_score": number,
   "severity": "critical" | "warning" | "ok",
-  "stall_detected": boolean,
-  "stall_duration_mins": number | null,
-  "queue_depth": number,
+  "bottleneck_detected": boolean,
+  "bottleneck_duration_mins": number | null,
+  "wip_count": number,
   "recommendation": string
 }
 
@@ -45,19 +45,19 @@ Name exact stations, work orders, and operators where relevant.`;
 
 const ProductionSchema = z
   .object({
-    one_line_summary:    z.string(),
-    top_priority:        z.string(),
-    action_required:     z.boolean(),
-    handover_notes:      z.string(),
-    worst_station:       z.string(),
-    avg_cycle_mins:      z.number(),
-    target_cycle_mins:   z.number(),
-    bottleneck_score:    z.number(),
-    severity:            z.enum(["critical", "warning", "ok"]),
-    stall_detected:      z.boolean(),
-    stall_duration_mins: z.number().nullable(),
-    queue_depth:         z.number(),
-    recommendation:      z.string(),
+    one_line_summary:        z.string(),
+    top_priority:            z.string(),
+    action_required:         z.boolean(),
+    handover_notes:          z.string(),
+    worst_station:           z.string(),
+    avg_cycle_mins:          z.number(),
+    target_cycle_mins:       z.number(),
+    bottleneck_score:        z.number(),
+    severity:                z.enum(["critical", "warning", "ok"]),
+    bottleneck_detected:     z.boolean(),
+    bottleneck_duration_mins: z.number().nullable(),
+    wip_count:               z.number(),
+    recommendation:          z.string(),
   })
   .refine(
     (d) => {
@@ -117,11 +117,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       availability_pct: 92.5,
     },
     stations: [
-      { station_name: "SMT Assembly",      target_cycle_mins: 5.5, avg_cycle_mins: 5.8,  units_completed: 60, queue_depth: 1, stall_detected: false, stall_duration_mins: null, defect_count: 1, defect_rate_pct: 1.7,  bottleneck_score: 105, downtime_mins: 0  },
-      { station_name: "Soldering",         target_cycle_mins: 6.0, avg_cycle_mins: 6.2,  units_completed: 58, queue_depth: 2, stall_detected: false, stall_duration_mins: null, defect_count: 0, defect_rate_pct: 0,    bottleneck_score: 103, downtime_mins: 0  },
-      { station_name: "Visual Inspection", target_cycle_mins: 6.4, avg_cycle_mins: 14.8, units_completed: 30, queue_depth: 5, stall_detected: true,  stall_duration_mins: 22,   defect_count: 8, defect_rate_pct: 26.7, bottleneck_score: 231, downtime_mins: 18 },
-      { station_name: "Functional Test",   target_cycle_mins: 6.4, avg_cycle_mins: 6.9,  units_completed: 45, queue_depth: 1, stall_detected: false, stall_duration_mins: null, defect_count: 1, defect_rate_pct: 2.2,  bottleneck_score: 108, downtime_mins: 0  },
-      { station_name: "Packaging",         target_cycle_mins: 4.5, avg_cycle_mins: 4.6,  units_completed: 45, queue_depth: 0, stall_detected: false, stall_duration_mins: null, defect_count: 0, defect_rate_pct: 0,    bottleneck_score: 102, downtime_mins: 0  },
+      { station_name: "SMT Assembly",      target_cycle_mins: 5.5, avg_cycle_mins: 5.8,  units_completed: 60, wip_count: 1, bottleneck_detected: false, bottleneck_duration_mins: null, defect_count: 1, defect_rate_pct: 1.7,  bottleneck_score: 105, downtime_mins: 0  },
+      { station_name: "Soldering",         target_cycle_mins: 6.0, avg_cycle_mins: 6.2,  units_completed: 58, wip_count: 2, bottleneck_detected: false, bottleneck_duration_mins: null, defect_count: 0, defect_rate_pct: 0,    bottleneck_score: 103, downtime_mins: 0  },
+      { station_name: "Visual Inspection", target_cycle_mins: 6.4, avg_cycle_mins: 14.8, units_completed: 30, wip_count: 5, bottleneck_detected: true,  bottleneck_duration_mins: 22,   defect_count: 8, defect_rate_pct: 26.7, bottleneck_score: 231, downtime_mins: 18 },
+      { station_name: "Functional Test",   target_cycle_mins: 6.4, avg_cycle_mins: 6.9,  units_completed: 45, wip_count: 1, bottleneck_detected: false, bottleneck_duration_mins: null, defect_count: 1, defect_rate_pct: 2.2,  bottleneck_score: 108, downtime_mins: 0  },
+      { station_name: "Packaging",         target_cycle_mins: 4.5, avg_cycle_mins: 4.6,  units_completed: 45, wip_count: 0, bottleneck_detected: false, bottleneck_duration_mins: null, defect_count: 0, defect_rate_pct: 0,    bottleneck_score: 102, downtime_mins: 0  },
     ],
     work_orders: [],
   };

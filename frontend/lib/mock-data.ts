@@ -184,7 +184,7 @@ export const mockMfgKpis: ManufacturingKPIs = {
   throughput:     23.4,
   avgCycleTime:   38,
   scrapRate:      1.2,
-  reworkRate:     4.8,
+  defectFlagRate: 4.8,
   dpmo:           14000,
   downtimeMins:   47,
   totalStarted:   93,
