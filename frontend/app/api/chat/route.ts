@@ -1,20 +1,17 @@
+// CURRENT SYSTEM - reads from scan_events
 import { type NextRequest } from "next/server";
 import Groq from "groq-sdk";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
   }
 
   const body = await req.json().catch(() => ({}));
   const question: string = body.question ?? "";
-
   if (!question.trim()) {
     return new Response(JSON.stringify({ error: "question required" }), { status: 400 });
   }
@@ -24,41 +21,41 @@ export async function POST(req: NextRequest) {
     return new Response("Groq API key not configured.", { status: 500 });
   }
 
-  const service = createServiceClient();
+  const db = createServiceClient();
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const [{ data: parts }, { data: scans }, { data: lines }] = await Promise.all([
-    service.from("parts").select("batch_ref, current_status, current_station, line_id").limit(100),
-    service
-      .from("scans")
-      .select("station_name, status, scanned_at, operator_name")
-      .gte("scanned_at", since24h)
-      .limit(200),
-    service.from("production_lines").select("id, name").limit(20),
-  ]);
+  const { data: events } = await db
+    .from("scan_events")
+    .select("work_order_id, part_id, station_name, scan_type, scanned_at")
+    .gte("scanned_at", since24h)
+    .limit(500);
 
-  const statusCounts = (parts ?? []).reduce<Record<string, number>>((acc, p) => {
-    acc[p.current_status] = (acc[p.current_status] ?? 0) + 1;
-    return acc;
-  }, {});
+  const rows = events ?? [];
+  const completedByStation: Record<string, number> = {};
+  const defectsByStation: Record<string, number> = {};
+  const wipByStation: Record<string, number> = {};
+  const inFlight = new Map<string, string>();
 
-  const stationCounts = (parts ?? []).reduce<Record<string, number>>((acc, p) => {
-    if (p.current_status === "wip") acc[p.current_station] = (acc[p.current_station] ?? 0) + 1;
-    return acc;
-  }, {});
+  for (const row of rows) {
+    const id = row.part_id ?? row.work_order_id;
+    if (row.scan_type === "entry" && id) inFlight.set(id, row.station_name);
+    if (row.scan_type === "exit"  && id) inFlight.delete(id);
+    if (row.scan_type === "exit")    completedByStation[row.station_name] = (completedByStation[row.station_name] ?? 0) + 1;
+    if (row.scan_type === "defect") defectsByStation[row.station_name]   = (defectsByStation[row.station_name]   ?? 0) + 1;
+  }
+  for (const station of inFlight.values()) {
+    wipByStation[station] = (wipByStation[station] ?? 0) + 1;
+  }
 
   const context = {
-    production_lines: (lines ?? []).map((l) => l.name),
-    part_status_counts: statusCounts,
-    wip_parts_per_station: stationCounts,
-    total_parts: parts?.length ?? 0,
-    scans_last_24h: scans?.length ?? 0,
-    failed_qc_last_24h: (scans ?? []).filter((s) => s.status === "failed_qc").length,
-    completed_last_24h: (scans ?? []).filter((s) => s.status === "completed").length,
+    wip_by_station:       wipByStation,
+    completed_by_station: completedByStation,
+    defects_by_station:   defectsByStation,
+    total_events_24h:     rows.length,
+    total_wip:            inFlight.size,
   };
 
   const groq = new Groq({ apiKey: groqApiKey });
-
   const stream = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
@@ -68,7 +65,7 @@ export async function POST(req: NextRequest) {
       },
       {
         role: "user",
-        content: `Factory data:\n${JSON.stringify(context, null, 2)}\n\nQuestion: ${question}`,
+        content: `Factory data (last 24h):\n${JSON.stringify(context, null, 2)}\n\nQuestion: ${question}`,
       },
     ],
     temperature: 0.4,

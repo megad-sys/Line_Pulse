@@ -83,14 +83,14 @@ function Product() {
           </Reveal>
           <Reveal delay={80}>
             <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight text-[#1a1916] sm:text-6xl md:text-7xl">
-              AI agents that monitor your production lines.
+              AI agents that monitor, decide, and act on your production lines.
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-[#9a9688]">
-              LinePulse connects to your existing systems or deploys its own tracking system.
-              AI agents monitor your lines continuously, detect problems, and tell your team
-              exactly what to do next.
+              Agents recommend the next best action with full operational context. Once approved,
+              LinePulse executes across your existing systems — updating work orders, notifying teams,
+              triggering maintenance workflows, and logging every action automatically.
             </p>
           </Reveal>
           <Reveal delay={240}>
@@ -103,13 +103,14 @@ function Product() {
           </Reveal>
           <Reveal delay={320}>
             <p className="mt-6 text-sm text-[#9a9688]">
-              No hardware required &nbsp;·&nbsp; Live in one afternoon &nbsp;·&nbsp; Works with QR, CSV, or ERP
+              No hardware required &nbsp;·&nbsp; Live in one afternoon &nbsp;·&nbsp; Connects to the tools your team already uses
             </p>
           </Reveal>
         </div>
 
-        <Reveal delay={400} className="mt-16">
+        <Reveal delay={400} className="mt-16 flex flex-col gap-6">
           <DashboardMockup />
+          <AgentMockup />
         </Reveal>
       </Container>
     </section>
@@ -117,45 +118,28 @@ function Product() {
 }
 
 function DashboardMockup() {
-  const insights = [
-    {
-      icon: "🔴",
-      text: (
-        <>
-          <span className="font-semibold">Visual Inspection is your bottleneck</span> — 14.8 min avg vs 6.4 min target
-        </>
-      ),
-    },
-    {
-      icon: "⚠",
-      text: (
-        <>
-          <span className="font-semibold">Plan attainment at risk</span> — 53 units behind schedule
-        </>
-      ),
-    },
-    {
-      icon: "✓",
-      text: (
-        <>
-          <span className="font-semibold">Soldering running under target</span> all shift
-        </>
-      ),
-    },
+  const kpis = [
+    { label: "OEE",        value: "71%",   color: "text-amber-300" },
+    { label: "FPY",        value: "93.2%", color: "text-emerald-300" },
+    { label: "DPMO",       value: "8,200", color: "text-emerald-300" },
+    { label: "Throughput", value: "23.4/hr", color: "text-blue-300" },
   ];
 
   const rows = [
-    { station: "SMT Assembly",    parts: 12, time: "5.2m",  status: "ok",   note: "✓" },
-    { station: "Visual Inspect.", parts: 3,  time: "14.8m", status: "warn", note: "⚠ BOTTLENECK" },
-    { station: "Packaging",       parts: 4,  time: "4.4m",  status: "ok",   note: "✓" },
+    { station: "SMT Assembly",      wip: 12, time: "5.2m",  status: "ok",   note: "✓" },
+    { station: "Soldering",         wip: 8,  time: "6.1m",  status: "ok",   note: "✓" },
+    { station: "Visual Inspection", wip: 23, time: "14.8m", status: "warn", note: "⚠ BOTTLENECK" },
+    { station: "Functional Test",   wip: 5,  time: "7.3m",  status: "ok",   note: "✓" },
+    { station: "Packaging",         wip: 0,  time: "4.4m",  status: "ok",   note: "✓" },
   ];
 
   return (
     <div className="mx-auto max-w-4xl rounded-2xl bg-[#1a1916] p-6 shadow-2xl shadow-black/10 ring-1 ring-black/10 sm:p-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-white/70">
-          <span className="text-blue-400">✦</span>
-          <span className="font-mono text-xs uppercase tracking-widest">LinePulse Agent</span>
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <span className="text-blue-400 text-sm">✦</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-white/70">LinePulse · Shopfloor</span>
+          <span className="ml-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 font-mono text-[10px] text-amber-300">Demo data</span>
         </div>
         <div className="flex gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
@@ -164,41 +148,82 @@ function DashboardMockup() {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-3">
-        {insights.map((insight, idx) => (
-          <div
-            key={idx}
-            className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm leading-relaxed text-white/90"
-          >
-            <div className="mb-2 text-base">{insight.icon}</div>
-            <div>{insight.text}</div>
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        {kpis.map((k) => (
+          <div key={k.label} className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-white/40 mb-1">{k.label}</p>
+            <p className={`text-xl font-bold font-mono ${k.color}`}>{k.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-white/10">
+      <div className="overflow-hidden rounded-lg border border-white/10">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-white/50">
+          <thead className="bg-white/[0.04] text-xs uppercase tracking-wider text-white/40">
             <tr>
-              <th className="px-4 py-3 font-mono font-medium">Station</th>
-              <th className="px-4 py-3 font-mono font-medium">Parts</th>
-              <th className="px-4 py-3 font-mono font-medium">Avg Time</th>
-              <th className="px-4 py-3 font-mono font-medium">vs Target</th>
+              <th className="px-4 py-2.5 font-mono font-medium">Station</th>
+              <th className="px-4 py-2.5 font-mono font-medium">WIP</th>
+              <th className="px-4 py-2.5 font-mono font-medium">Avg Cycle</th>
+              <th className="px-4 py-2.5 font-mono font-medium">vs Target</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5 text-white/90">
+          <tbody className="divide-y divide-white/5 text-white/80">
             {rows.map((r) => (
               <tr key={r.station}>
-                <td className="px-4 py-3">{r.station}</td>
-                <td className="px-4 py-3 font-mono">{r.parts}</td>
-                <td className="px-4 py-3 font-mono">{r.time}</td>
-                <td className={`px-4 py-3 font-mono text-xs ${r.status === "warn" ? "text-amber-300" : "text-emerald-300"}`}>
+                <td className="px-4 py-2.5 text-sm">{r.station}</td>
+                <td className="px-4 py-2.5 font-mono text-sm">{r.wip > 0 ? r.wip : "—"}</td>
+                <td className="px-4 py-2.5 font-mono text-sm">{r.time}</td>
+                <td className={`px-4 py-2.5 font-mono text-xs font-semibold ${r.status === "warn" ? "text-amber-300" : "text-emerald-300"}`}>
                   {r.note}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function AgentMockup() {
+  return (
+    <div className="mx-auto max-w-4xl rounded-2xl bg-[#1a1916] p-6 shadow-2xl shadow-black/10 ring-1 ring-black/10 sm:p-8">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <span className="text-blue-400 text-sm">✦</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-white/70">LinePulse · AI Agents · Production</span>
+        </div>
+        <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 font-mono text-[10px] font-semibold text-amber-300">
+          ⚠ Awaiting Approval
+        </span>
+      </div>
+
+      <div className="rounded-lg border border-white/10 bg-white/[0.03] p-5 space-y-4">
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-white/40 mb-1">Data</p>
+            <p className="text-white/70">5 stations · 74 units completed · 3.2h remaining</p>
+          </div>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-white/40 mb-1">Analysis</p>
+            <p className="text-white/70">Visual Inspection at 14.8 min avg (2.3× target). 23 parts backing up. Shift plan at risk.</p>
+          </div>
+        </div>
+
+        <div className="border-t border-white/10 pt-4">
+          <p className="font-mono text-[10px] uppercase tracking-wider text-white/40 mb-3">Recommended Action</p>
+          <div className="rounded-lg border border-blue-400/20 bg-blue-400/5 p-4">
+            <p className="text-white/90 text-sm font-medium mb-1">Reallocate operator from Packaging → Visual Inspection for remainder of shift</p>
+            <p className="text-emerald-300 text-xs font-mono">Estimated recovery: 47 min · Plan back on track</p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <button className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-semibold text-[#1a1916] hover:bg-white/90 transition-colors">
+            Approve &amp; Execute →
+          </button>
+          <p className="text-xs text-white/30">On approval: notifies team · updates WO priority · logs issue</p>
+        </div>
       </div>
     </div>
   );
@@ -214,12 +239,12 @@ function Problem() {
     {
       icon: "⏱",
       title: "Humans can't monitor everything",
-      body: "A plant manager can't watch every station, every shift, every day. By the time a bottleneck is obvious, it's already cost you hours and a missed deadline.",
+      body: "An engineer can't watch every station, every shift, every day. By the time a bottleneck is obvious, it's already cost you hours and a missed deadline.",
     },
     {
       icon: "💸",
       title: "Your ERP records. It doesn't act.",
-      body: "SAP and Oracle tell you what happened yesterday. They don't tell you what's going wrong right now — and they certainly don't fix it.",
+      body: "SAP and Oracle tell you what happened yesterday. They don't tell you what's going wrong right now.",
     },
   ];
   return (
@@ -231,7 +256,7 @@ function Problem() {
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-[#1a1916] sm:text-5xl">
-              Most factories find out about problems too late — or not at all.
+              Most factories find out about problems too late.
             </h2>
           </Reveal>
         </div>
@@ -265,8 +290,8 @@ function Solution() {
     },
     {
       icon: "↗",
-      title: "Routes the right action to the right person.",
-      body: "When the agent detects a bottleneck, a QC spike, or a delayed work order, it routes a specific action to the right person — shift lead, QC manager, or production director — automatically.",
+      title: "Approves once. Executes everywhere.",
+      body: "When an operator approves an agent recommendation, LinePulse coordinates the execution automatically across connected systems — work orders, maintenance workflows, team notifications, and operational tracking.",
     },
   ];
   return (
@@ -324,8 +349,8 @@ function HowItWorks() {
     },
     {
       n: "04",
-      title: "Your team acts",
-      body: "Agents surface the right action to the right person. Humans decide. Machine-speed awareness, human control.",
+      title: "Approve once. System executes.",
+      body: "Approve an agent recommendation once. LinePulse handles the downstream coordination across your existing tools, workflows, and operational systems.",
     },
   ];
   return (
@@ -362,9 +387,9 @@ function Features() {
   const features = [
     { title: "Real-time floor visibility",  body: "Parts tracked at every station, live." },
     { title: "AI Agents, not dashboards",   body: "LinePulse agents continuously monitor production activity — detecting bottlenecks and downtime patterns, surfacing quality issues, and highlighting what needs attention before problems escalate. Your team stays in control, with faster decisions and real-time operational awareness." },
-    { title: "Automatic escalations",       body: "Right person notified when thresholds breach." },
+    { title: "Operator approval flow",      body: "Agents recommend. Operators approve in one click. The system executes — no copy-pasting into other tools, no manual follow-up." },
+    { title: "Native integrations",         body: "Email, Slack, Microsoft Teams, work order reprioritisation, and maintenance ticketing — all triggered automatically the moment an action is approved." },
     { title: "Manufacturing KPIs",          body: "OEE, FPY, DPMO, cycle time — calculated automatically." },
-    { title: "No hardware required",        body: "Phone camera + office printer. That's it." },
     { title: "Works alongside your existing systems", body: "Designed to sit next to your ERP, MES, or spreadsheets — not replace them." },
   ];
   return (
@@ -376,7 +401,7 @@ function Features() {
           </Reveal>
           <Reveal delay={80}>
             <h2 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-[#1a1916] sm:text-5xl">
-              Everything you need. Nothing you don&apos;t.
+              Deploy fast. Operate smarter.
             </h2>
           </Reveal>
         </div>
@@ -408,7 +433,6 @@ function CTA() {
           </Reveal>
           <Reveal delay={80}>
             <p className="mx-auto mt-5 max-w-md text-lg text-white/60">
-              Free 30-day pilot. No contract. No hardware. No consultant.
               The agent starts working the moment you connect your first data source.
             </p>
           </Reveal>
@@ -417,7 +441,7 @@ function CTA() {
               <PrimaryButton href={BOOK_DEMO_URL} variant="white" external>
                 Book a Demo →
               </PrimaryButton>
-              <PrimaryButton href="mailto:hello@linepulse.com" variant="white-outline">
+              <PrimaryButton href="https://mail.google.com/mail/?view=cm&fs=1&to=gadmenna97@gmail.com&su=Demo+Booking%3A+Line+Pulse" variant="white-outline" external>
                 Contact us
               </PrimaryButton>
             </div>
@@ -439,7 +463,7 @@ function Footer() {
           </div>
           <nav className="flex items-center gap-7 text-sm">
             <a href="#" className="text-[#1a1916]/80 hover:text-[#1a1916]">Privacy Policy</a>
-            <a href="mailto:hello@linepulse.com" className="text-[#1a1916]/80 hover:text-[#1a1916]">Contact</a>
+            <a href="https://mail.google.com/mail/?view=cm&fs=1&to=gadmenna97@gmail.com&su=Demo+Booking%3A+Line+Pulse" className="text-[#1a1916]/80 hover:text-[#1a1916]">Contact</a>
           </nav>
         </div>
         <div className="mt-6">

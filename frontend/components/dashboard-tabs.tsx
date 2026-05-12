@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { DataSourceModal } from "@/components/data-source-modal";
-import { LayoutGrid, BarChart2, Settings2, PenLine } from "lucide-react";
+import { LayoutGrid, BarChart2, Settings2, PenLine, Bot } from "lucide-react";
 import StationStatusTable from "@/components/station-status-table";
 import PartStatusTable from "@/components/part-status-table";
 import ShiftAnalysisPanel from "@/components/shift-analysis-panel";
@@ -12,14 +12,18 @@ import PlannedVsProduced from "@/components/planned-vs-produced";
 import EscalationCenter from "@/components/escalation-center";
 import CustomerLineSetup from "@/components/customer-line-setup";
 import Whiteboard from "@/components/whiteboard";
+import AiAgentPanel from "@/components/ai-agent-panel";
+import AgentPulseStrip from "@/components/agent-pulse-strip";
+import ScrapReworkStats from "@/components/scrap-rework-stats";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockPartKpis } from "@/lib/mock-data";
 import type { PartKPIs } from "@/lib/types";
 
-type Tab = "shopfloor" | "analytics" | "setup" | "whiteboard";
+type Tab = "shopfloor" | "analytics" | "setup" | "whiteboard" | "agents";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: "shopfloor",  label: "Shopfloor",  icon: <LayoutGrid size={18} /> },
+  { id: "agents",     label: "Agents",     icon: <Bot        size={18} /> },
   { id: "analytics",  label: "Analytics",  icon: <BarChart2  size={18} /> },
   { id: "setup",      label: "Setup",      icon: <Settings2  size={18} /> },
   { id: "whiteboard", label: "Board",      icon: <PenLine    size={18} /> },
@@ -35,15 +39,16 @@ export default function DashboardTabs({
   serverHasParts: boolean;
 }) {
   const searchParams = useSearchParams();
+  const [activeView, setActiveView] = useState<"production" | "quality">("production");
   const [activeTab, setActiveTab] = useState<Tab>(() => {
     const t = searchParams.get("tab");
-    return (["shopfloor", "analytics", "setup", "whiteboard"].includes(t ?? "") ? t : "shopfloor") as Tab;
+    return (["shopfloor", "analytics", "setup", "whiteboard", "agents"].includes(t ?? "") ? t : "shopfloor") as Tab;
   });
   const { isDemo } = useDemoMode();
 
   useEffect(() => {
     const t = searchParams.get("tab");
-    if (t && ["shopfloor", "analytics", "setup", "whiteboard"].includes(t)) {
+    if (t && ["shopfloor", "analytics", "setup", "whiteboard", "agents"].includes(t)) {
       setActiveTab(t as Tab);
     }
   }, [searchParams]);
@@ -63,71 +68,106 @@ export default function DashboardTabs({
         {/* ── Shopfloor tab ──────────────────────────────────── */}
         {activeTab === "shopfloor" && (
           <div className="flex flex-col gap-5">
-            <div className="flex items-stretch rounded-xl border overflow-hidden"
-              style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-              {[
-                { label: "In Production",  value: kpis.partsInProduction, color: "#60a5fa", sub: "parts active now" },
-                { label: "Released Today", value: kpis.releasedToday,    color: "#4ade80", sub: "completed this shift" },
-                { label: "Rework / Failed",value: kpis.reworkFailed,     color: "#f87171", sub: "need attention" },
-                { label: "Active Lines",   value: kpis.activeLines,      color: "#60a5fa", sub: "lines with WIP" },
-              ].map((m, i) => (
-                <div key={i} className="flex-1 flex flex-col justify-center px-6 py-4 border-r last:border-r-0"
-                  style={{ borderColor: "var(--border)" }}>
-                  <span className="text-xs font-medium uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>{m.label}</span>
-                  <span className="text-3xl font-bold font-mono" style={{ color: m.color }}>{m.value}</span>
-                  <span className="text-xs mt-1" style={{ color: "var(--subtle)" }}>{m.sub}</span>
-                </div>
+
+            {/* Dashboard view switcher */}
+            <div className="flex items-center gap-1 self-start rounded-lg p-1"
+              style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+              {(["production", "quality"] as const).map((view) => (
+                <button
+                  key={view}
+                  onClick={() => setActiveView(view)}
+                  className="px-4 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize"
+                  style={{
+                    backgroundColor: activeView === view ? "#2e2e2b" : "transparent",
+                    color: activeView === view ? "#f0ede8" : "var(--muted)",
+                    borderLeft: activeView === view ? "none" : "none",
+                  }}>
+                  {view === "production" ? "Production Dashboard" : "Quality Dashboard"}
+                </button>
               ))}
             </div>
 
-            {!hasLines ? (
-              <div className="rounded-xl px-6 py-5 flex items-center justify-between"
-                style={{ backgroundColor: "#1f1500", border: "1px solid #5c3d00" }}>
-                <div>
-                  <p className="font-semibold text-sm" style={{ color: "#fbbf24" }}>Set up your production line first</p>
-                  <p className="text-xs mt-0.5" style={{ color: "#a37b00" }}>
-                    Define your lines and stations before creating parts or scanning QR codes.
-                  </p>
+            {/* Production view */}
+            {activeView === "production" && (
+              <>
+                <div className="flex items-stretch rounded-xl border overflow-hidden"
+                  style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
+                  {[
+                    { label: "In Production",  value: kpis.partsInProduction, color: "#60a5fa", sub: "parts active now" },
+                    { label: "Released Today", value: kpis.releasedToday,    color: "#4ade80", sub: "completed this shift" },
+                    { label: "Rework / Failed",value: kpis.reworkFailed,     color: "#f87171", sub: "need attention" },
+                    { label: "Active Lines",   value: kpis.activeLines,      color: "#60a5fa", sub: "lines with WIP" },
+                  ].map((m, i) => (
+                    <div key={i} className="flex-1 flex flex-col justify-center px-6 py-4 border-r last:border-r-0"
+                      style={{ borderColor: "var(--border)" }}>
+                      <span className="text-xs font-medium uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>{m.label}</span>
+                      <span className="text-3xl font-bold font-mono" style={{ color: m.color }}>{m.value}</span>
+                      <span className="text-xs mt-1" style={{ color: "var(--subtle)" }}>{m.sub}</span>
+                    </div>
+                  ))}
                 </div>
-                <button onClick={() => setActiveTab("setup")}
-                  className="shrink-0 ml-6 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500">
-                  Set Up Lines →
-                </button>
-              </div>
-            ) : !hasParts ? (
-              <div className="rounded-xl px-6 py-5 flex items-center justify-between"
-                style={{ backgroundColor: "#001526", border: "1px solid #0c3d66" }}>
-                <div>
-                  <p className="font-semibold text-sm" style={{ color: "#60a5fa" }}>Ready — start your first batch</p>
-                  <p className="text-xs mt-0.5" style={{ color: "#1d6fa3" }}>
-                    Your line is set up. Create a batch of parts to begin tracking production.
-                  </p>
-                </div>
-                <button onClick={() => setActiveTab("setup")}
-                  className="shrink-0 ml-6 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500">
-                  New Batch →
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-5">
-                <div className="grid grid-cols-2 gap-5">
-                  <StationStatusTable />
-                  <PartStatusTable />
-                </div>
-                <ManufacturingKPIs />
-                <PlannedVsProduced />
-              </div>
+
+                {!hasLines ? (
+                  <div className="rounded-xl px-6 py-5 flex items-center justify-between"
+                    style={{ backgroundColor: "#1f1500", border: "1px solid #5c3d00" }}>
+                    <div>
+                      <p className="font-semibold text-sm" style={{ color: "#fbbf24" }}>Set up your production line first</p>
+                      <p className="text-xs mt-0.5" style={{ color: "#a37b00" }}>
+                        Define your lines and stations before creating parts or scanning QR codes.
+                      </p>
+                    </div>
+                    <button onClick={() => setActiveTab("setup")}
+                      className="shrink-0 ml-6 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500">
+                      Set Up Lines →
+                    </button>
+                  </div>
+                ) : !hasParts ? (
+                  <div className="rounded-xl px-6 py-5 flex items-center justify-between"
+                    style={{ backgroundColor: "#001526", border: "1px solid #0c3d66" }}>
+                    <div>
+                      <p className="font-semibold text-sm" style={{ color: "#60a5fa" }}>Ready — start your first batch</p>
+                      <p className="text-xs mt-0.5" style={{ color: "#1d6fa3" }}>
+                        Your line is set up. Create a batch of parts to begin tracking production.
+                      </p>
+                    </div>
+                    <button onClick={() => setActiveTab("setup")}
+                      className="shrink-0 ml-6 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500">
+                      New Batch →
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-5">
+                    <AgentPulseStrip onViewAgents={() => setActiveTab("agents")} />
+                    <div id="station-status" className="grid grid-cols-2 gap-5">
+                      <StationStatusTable />
+                      <PartStatusTable />
+                    </div>
+                    <div id="mfg-kpis">
+                      <ManufacturingKPIs />
+                    </div>
+                    <PlannedVsProduced />
+                  </div>
+                )}
+
+                {isDemo && !hasParts && (
+                  <div className="flex flex-col gap-5">
+                    <AgentPulseStrip onViewAgents={() => setActiveTab("agents")} />
+                    <div id="station-status" className="grid grid-cols-2 gap-5">
+                      <StationStatusTable />
+                      <PartStatusTable />
+                    </div>
+                    <div id="mfg-kpis">
+                      <ManufacturingKPIs />
+                    </div>
+                    <PlannedVsProduced />
+                  </div>
+                )}
+              </>
             )}
 
-            {isDemo && !hasParts && (
-              <div className="flex flex-col gap-5">
-                <div className="grid grid-cols-2 gap-5">
-                  <StationStatusTable />
-                  <PartStatusTable />
-                </div>
-                <ManufacturingKPIs />
-                <PlannedVsProduced />
-              </div>
+            {/* Quality view */}
+            {activeView === "quality" && (
+              <ScrapReworkStats />
             )}
           </div>
         )}
@@ -148,6 +188,11 @@ export default function DashboardTabs({
         {/* ── Whiteboard tab ─────────────────────────────────── */}
         {activeTab === "whiteboard" && (
           <Whiteboard />
+        )}
+
+        {/* ── Agents tab ─────────────────────────────────────── */}
+        {activeTab === "agents" && (
+          <AiAgentPanel />
         )}
       </div>
 

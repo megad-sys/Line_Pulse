@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Factory, Sun, Moon, LogOut, ChevronDown } from "lucide-react";
-import { useDemoMode } from "@/lib/demo-context";
 import { useTheme } from "@/lib/theme-context";
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,7 +22,6 @@ export default function Nav({
 }) {
   const pathname = usePathname();
   const router   = useRouter();
-  const { isDemo, toggle } = useDemoMode();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -63,17 +61,6 @@ export default function Nav({
 
       {/* Right controls */}
       <div className="flex items-center gap-2">
-
-        {/* Demo / Live toggle */}
-        <button onClick={toggle}
-          className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
-            isDemo
-              ? "text-blue-400 bg-blue-400/10 border-blue-400/20 hover:bg-blue-400/20"
-              : "hover:border-[var(--muted)]"
-          }`}
-          style={!isDemo ? { color: "var(--muted)", border: "1px solid var(--border)" } : {}}>
-          {isDemo ? "Demo Mode" : "Live Data"}
-        </button>
 
         {/* Theme toggle */}
         <button onClick={toggleTheme} title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}

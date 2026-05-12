@@ -1,8 +1,8 @@
+// CURRENT SYSTEM - reads from scan_events via /api/shopfloor/metrics
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { Download } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { useDemoMode } from "@/lib/demo-context";
 import { downloadCsv } from "@/lib/export-csv";
 import { apiFetch } from "@/lib/api";
@@ -65,66 +65,25 @@ export default function PartStatusTable() {
       setLoading(false);
       return;
     }
-    const supabase = createClient();
 
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const weekStart = new Date(todayStart);
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-
-    const [{ data: parts }, { data: scansToday }, { data: scansWeek }] = await Promise.all([
-      supabase.from("parts").select("current_status"),
-      supabase.from("scans").select("status, part_id").gte("scanned_at", todayStart.toISOString()),
-      supabase.from("scans").select("status, part_id").gte("scanned_at", weekStart.toISOString()),
-    ]);
-
-    const totalParts = parts?.length ?? 0;
-
-    if (totalParts === 0) {
-      // Try new tables via shopfloor metrics API
-      const res = await apiFetch("/api/shopfloor/metrics");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.hasData && data.partStatus?.rows) {
-          // Merge API counts with STATUS_DEFS to satisfy the StatusRow shape
-          const apiRows = data.partStatus.rows as Array<{ label: string; now: number; today: number; thisWeek: number }>;
-          const merged = STATUS_DEFS.map((def) => {
-            const match = apiRows.find((r) => r.label === def.label);
-            return { ...def, now: match?.now ?? 0, today: match?.today ?? 0, thisWeek: match?.thisWeek ?? 0 };
-          });
-          setIsDemo(false);
-          setRows(merged);
-          setLoading(false);
-          return;
-        }
+    const res = await apiFetch("/api/shopfloor/metrics");
+    if (res.ok) {
+      const data = await res.json();
+      if (data.hasData && data.partStatus?.rows) {
+        const apiRows = data.partStatus.rows as Array<{ label: string; now: number; today: number; thisWeek: number }>;
+        const merged = STATUS_DEFS.map((def) => {
+          const match = apiRows.find((r) => r.label === def.label);
+          return { ...def, now: match?.now ?? 0, today: match?.today ?? 0, thisWeek: match?.thisWeek ?? 0 };
+        });
+        setIsDemo(false);
+        setRows(merged);
+        setLoading(false);
+        return;
       }
-      setIsDemo(true);
-      setRows(MOCK_ROWS);
-      setLoading(false);
-      return;
     }
 
-    setIsDemo(false);
-
-    const nowCounts: Record<string, number> = {};
-    for (const p of parts ?? []) {
-      nowCounts[p.current_status] = (nowCounts[p.current_status] ?? 0) + 1;
-    }
-
-    const failedTodayIds   = new Set((scansToday ?? []).filter((s) => s.status === "failed_qc").map((s) => s.part_id));
-    const releasedTodayIds = new Set((scansToday ?? []).filter((s) => s.status === "completed").map((s) => s.part_id));
-    const failedWeekIds    = new Set((scansWeek ?? []).filter((s) => s.status === "failed_qc").map((s) => s.part_id));
-    const releasedWeekIds  = new Set((scansWeek ?? []).filter((s) => s.status === "completed").map((s) => s.part_id));
-
-    const built: StatusRow[] = STATUS_DEFS.map((def) => {
-      const now = def.dbStatus.reduce((sum, s) => sum + (nowCounts[s] ?? 0), 0);
-      let today = 0, thisWeek = 0;
-      if (def.label === "Failed")   { today = failedTodayIds.size;   thisWeek = failedWeekIds.size;   }
-      if (def.label === "Released") { today = releasedTodayIds.size; thisWeek = releasedWeekIds.size; }
-      return { ...def, now, today, thisWeek };
-    });
-
-    setRows(built);
+    setIsDemo(true);
+    setRows(MOCK_ROWS);
     setLoading(false);
   }, [ctxDemo]);
 

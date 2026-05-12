@@ -1,8 +1,8 @@
+// CURRENT SYSTEM - reads from production_lines/line_stations only
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, GripVertical, Trash2, ChevronRight, Loader2, AlertCircle, RotateCcw, CheckCircle2, Printer, Factory } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { Plus, GripVertical, Trash2, ChevronRight, Loader2, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { apiPublicFetch } from "@/lib/api";
 
@@ -23,12 +23,6 @@ type LineStation = {
   target_mins: number;
   sequence_order: number;
 };
-type CreatedPart = { id: string; qr_code: string };
-
-/* ── Helpers ──────────────────────────────────────────────── */
-function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
-function pad(n: number, w: number) { return String(n).padStart(w, "0"); }
-const APP_URL = typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000");
 
 /* ── Mock data ────────────────────────────────────────────── */
 const MOCK_LINES: Line[] = [
@@ -50,8 +44,6 @@ const MOCK_STATIONS: Record<string, LineStation[]> = {
   ],
 };
 
-type View = "lines" | "batch" | "printed";
-
 export default function CustomerLineSetup() {
   const supabase = createClient();
 
@@ -66,11 +58,11 @@ export default function CustomerLineSetup() {
   const [setupError, setSetupError]             = useState("");
 
   /* ── Lines ──────────────────────────────────────────────── */
-  const [loading, setLoading]               = useState(true);
-  const [lines, setLines]                   = useState<Line[]>([]);
-  const [selectedLine, setSelectedLine]     = useState<Line | null>(null);
-  const [stations, setStations]             = useState<LineStation[]>([]);
-  const [stationsLoading, setStationsLoading] = useState(false);
+  const [loading, setLoading]                   = useState(true);
+  const [lines, setLines]                       = useState<Line[]>([]);
+  const [selectedLine, setSelectedLine]         = useState<Line | null>(null);
+  const [stations, setStations]                 = useState<LineStation[]>([]);
+  const [stationsLoading, setStationsLoading]   = useState(false);
 
   const [showAddLine, setShowAddLine] = useState(false);
   const [lineName, setLineName]       = useState("");
@@ -86,20 +78,6 @@ export default function CustomerLineSetup() {
 
   const [dragIndex, setDragIndex]         = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-
-  /* ── Batch creation ─────────────────────────────────────── */
-  const [view, setView]                   = useState<View>("lines");
-  const [batchLines, setBatchLines]       = useState<Line[]>([]);
-  const [selectedLineId, setSelectedLineId] = useState("");
-  const [firstStation, setFirstStation]   = useState("");
-  const [batchRef, setBatchRef]           = useState("");
-  const [numParts, setNumParts]           = useState(50);
-  const [submitting, setSubmitting]       = useState(false);
-  const [batchError, setBatchError]       = useState("");
-  const [createdParts, setCreatedParts]   = useState<CreatedPart[] | null>(null);
-  const [createdLineName, setCreatedLineName] = useState("");
-  const [createdBatchRef, setCreatedBatchRef] = useState("");
-  const [createdFirstStation, setCreatedFirstStation] = useState("");
 
   useEffect(() => { loadLines(); }, []);
 
@@ -120,7 +98,6 @@ export default function CustomerLineSetup() {
       setSetupUserName(user.user_metadata?.full_name ?? user.email ?? "");
       setSetupIncomplete(true);
       setLines(MOCK_LINES);
-      setBatchLines(MOCK_LINES);
       setIsDemo(true);
       setLoading(false);
       return;
@@ -131,7 +108,6 @@ export default function CustomerLineSetup() {
 
     if (error || !linesData || linesData.length === 0) {
       setLines(MOCK_LINES);
-      setBatchLines(MOCK_LINES);
       setIsDemo(true);
       setLoading(false);
       return;
@@ -145,16 +121,8 @@ export default function CustomerLineSetup() {
 
     const mapped = (linesData as Line[]).map((l) => ({ ...l, stationCount: counts[l.id] ?? 0 }));
     setLines(mapped);
-    setBatchLines(mapped);
     setIsDemo(false);
     setLoading(false);
-  }
-
-  async function nextBatchRef() {
-    const year = new Date().getFullYear();
-    const { data } = await supabase.from("parts").select("batch_ref").like("batch_ref", `BATCH-${year}-%`);
-    const count = new Set((data ?? []).map((r: { batch_ref: string }) => r.batch_ref)).size;
-    return `BATCH-${year}-${pad(count + 1, 4)}`;
   }
 
   /* ── Setup incomplete ───────────────────────────────────── */
@@ -205,7 +173,6 @@ export default function CustomerLineSetup() {
     if (error) { setLineError(error.message); return; }
     const newLine = { ...(data as Line), stationCount: 0 };
     setLines((prev) => [...prev.filter((l) => !l.id.startsWith("mock")), newLine]);
-    setBatchLines((prev) => [...prev.filter((l) => !l.id.startsWith("mock")), newLine]);
     setIsDemo(false);
     setLineName("");
     setLineDesc("");
@@ -262,64 +229,6 @@ export default function CustomerLineSetup() {
     }
   }
 
-  /* ── Batch creation ─────────────────────────────────────── */
-  async function openBatchView() {
-    const ref = await nextBatchRef();
-    setBatchRef(ref);
-    setSelectedLineId("");
-    setFirstStation("");
-    setNumParts(50);
-    setBatchError("");
-    setCreatedParts(null);
-    setView("batch");
-  }
-
-  async function handleBatchLineChange(lineId: string) {
-    setSelectedLineId(lineId);
-    setFirstStation("");
-    if (!lineId) return;
-    const { data } = await supabase
-      .from("line_stations").select("station_name")
-      .eq("line_id", lineId).order("sequence_order", { ascending: true }).limit(1).single();
-    setFirstStation(data?.station_name ?? "");
-  }
-
-  async function handleBatchSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedLineId || !batchRef || numParts < 1) return;
-    setBatchError("");
-    setSubmitting(true);
-    const line = batchLines.find((l) => l.id === selectedLineId)!;
-    const lineSlug  = slugify(line.name);
-    const batchSlug = batchRef.toLowerCase();
-    const rows = Array.from({ length: numParts }, (_, i) => ({
-      tenant_id:       tenantId,
-      line_id:         selectedLineId,
-      batch_ref:       batchRef,
-      qr_code:         `${lineSlug}-${batchSlug}-${pad(i + 1, 3)}`,
-      current_status:  "wip",
-      current_station: firstStation,
-    }));
-    const { data, error: insertError } = await supabase.from("parts").insert(rows).select("id, qr_code");
-    setSubmitting(false);
-    if (insertError) { setBatchError(insertError.message); return; }
-    setCreatedParts(data as CreatedPart[]);
-    setCreatedLineName(line.name);
-    setCreatedBatchRef(batchRef);
-    setCreatedFirstStation(firstStation);
-    setView("printed");
-  }
-
-  async function handleBatchReset() {
-    setCreatedParts(null);
-    setSelectedLineId("");
-    setFirstStation("");
-    setNumParts(50);
-    setBatchError("");
-    setBatchRef(await nextBatchRef());
-    setView("batch");
-  }
-
   /* ── Render ─────────────────────────────────────────────── */
   if (loading) {
     return (
@@ -329,160 +238,26 @@ export default function CustomerLineSetup() {
     );
   }
 
-  /* Printed QR sheet */
-  if (view === "printed" && createdParts) {
-    return (
-      <>
-        <style>{`
-          @media print {
-            nav, .no-print { display: none !important; }
-            body { background: white !important; }
-            .qr-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 12px !important; padding: 16px !important; }
-            .qr-card { border: 1px solid #d1d5db !important; border-radius: 8px !important; padding: 10px !important; break-inside: avoid !important; background: white !important; }
-            .qr-card * { color: #111827 !important; }
-          }
-        `}</style>
-        <div>
-          <div className="no-print flex items-start justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-[#4ade80]/10">
-                <CheckCircle2 size={18} style={{ color: "#4ade80" }} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>{createdParts.length} parts created</h2>
-                <p className="text-sm mt-0.5 font-mono" style={{ color: "var(--muted)" }}>
-                  {createdBatchRef} · {createdLineName}{createdFirstStation && ` · starting at ${createdFirstStation}`}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={handleBatchReset}
-                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                style={{ color: "var(--text)", backgroundColor: "var(--surface2)", border: "1px solid var(--border)" }}>
-                <RotateCcw size={14} /> New Batch
-              </button>
-              <button onClick={() => setView("lines")}
-                className="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                style={{ color: "var(--text)", backgroundColor: "var(--surface2)", border: "1px solid var(--border)" }}>
-                Back to Lines
-              </button>
-              <button onClick={() => window.print()}
-                className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500">
-                <Printer size={16} /> Print All Labels
-              </button>
-            </div>
-          </div>
-          <div className="qr-grid grid grid-cols-5 gap-3">
-            {createdParts.map((part, i) => (
-              <div key={part.id} className="qr-card rounded-xl border p-3.5 flex flex-col items-center gap-2"
-                style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-                <div className="w-full flex items-center gap-1 mb-0.5">
-                  <Factory size={10} style={{ color: "var(--muted)" }} className="shrink-0" />
-                  <span className="text-xs font-bold tracking-widest uppercase" style={{ color: "var(--muted)", fontSize: 9 }}>Line Pulse</span>
-                </div>
-                <QRCodeSVG value={`${APP_URL}/scan/${part.id}`} size={100} level="M" includeMargin={false} bgColor="#222220" fgColor="#f0ede8" />
-                <div className="w-full text-center">
-                  <p className="text-xs font-mono font-semibold truncate" style={{ color: "var(--text)" }}>{createdBatchRef}</p>
-                  <p className="truncate font-mono" style={{ fontSize: 10, color: "var(--muted)" }}>{part.qr_code}</p>
-                  <p className="font-mono mt-0.5" style={{ fontSize: 9, color: "var(--subtle)" }}>#{pad(i + 1, 3)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  /* New batch form */
-  if (view === "batch") {
-    return (
-      <div className="max-w-[480px]">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => setView("lines")} className="text-sm transition-colors" style={{ color: "var(--muted)" }}>
-            ← Lines
-          </button>
-          <span style={{ color: "var(--border)" }}>/</span>
-          <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>New Batch</h2>
-        </div>
-        <div className="rounded-xl border p-6" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)" }}>
-          <form onSubmit={handleBatchSubmit} className="flex flex-col gap-5">
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Production line *</label>
-              {batchLines.length === 0 ? (
-                <p className="text-sm rounded-lg px-3 py-2.5" style={{ color: "#fbbf24", backgroundColor: "#1f1500", border: "1px solid #5c3d00" }}>
-                  No lines set up yet. Create a line first.
-                </p>
-              ) : (
-                <select value={selectedLineId} onChange={(e) => handleBatchLineChange(e.target.value)} required className="input">
-                  <option value="">Select a line…</option>
-                  {batchLines.map((l) => (
-                    <option key={l.id} value={l.id}>{l.name}{l.description ? ` — ${l.description}` : ""}</option>
-                  ))}
-                </select>
-              )}
-            </div>
-            {firstStation && (
-              <div className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm" style={{ backgroundColor: "var(--surface2)" }}>
-                <span style={{ color: "var(--muted)" }}>Parts start at</span>
-                <span className="font-semibold" style={{ color: "var(--text)" }}>{firstStation}</span>
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Batch reference</label>
-              <input type="text" value={batchRef} readOnly className="input font-mono cursor-default" style={{ color: "var(--muted)" }} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--text)" }}>Number of parts *</label>
-              <input type="number" value={numParts}
-                onChange={(e) => setNumParts(Math.max(1, Math.min(500, parseInt(e.target.value, 10) || 1)))}
-                min={1} max={500} required className="input" />
-              <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Max 500 per batch</p>
-            </div>
-            {batchError && (
-              <p className="text-sm rounded-lg px-3 py-2 flex items-center gap-1.5" style={{ color: "#f87171", backgroundColor: "#1a0000", border: "1px solid #f8717133" }}>
-                <AlertCircle size={14} className="shrink-0" /> {batchError}
-              </p>
-            )}
-            <button type="submit" disabled={submitting || batchLines.length === 0 || !tenantId}
-              className="w-full font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 text-sm bg-blue-600 text-white hover:bg-blue-500">
-              {submitting ? `Creating ${numParts} parts…` : `Create ${numParts} parts`}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  /* Lines management (default view) */
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Production Lines</h2>
-              {isDemo && (
-                <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: "#fbbf24", backgroundColor: "#fbbf2415", border: "1px solid #fbbf2430" }}>
-                  Demo data
-                </span>
-              )}
-            </div>
-            <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>Configure lines and stations, then create batches</p>
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>Production Lines</h2>
+            {isDemo && (
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ color: "#fbbf24", backgroundColor: "#fbbf2415", border: "1px solid #fbbf2430" }}>
+                Demo data
+              </span>
+            )}
           </div>
+          <p className="text-sm mt-0.5" style={{ color: "var(--muted)" }}>Configure lines and stations</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={openBatchView}
-            className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors bg-blue-600 text-white hover:bg-blue-500">
-            New Batch →
-          </button>
-          <button onClick={() => { setShowAddLine(true); setLineError(""); }}
-            className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-            style={{ backgroundColor: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border)" }}>
-            <Plus size={15} /> Add Line
-          </button>
-        </div>
+        <button onClick={() => { setShowAddLine(true); setLineError(""); }}
+          className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          style={{ backgroundColor: "var(--surface2)", color: "var(--text)", border: "1px solid var(--border)" }}>
+          <Plus size={15} /> Add Line
+        </button>
       </div>
 
       {/* Incomplete setup banner */}

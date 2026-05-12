@@ -1,5 +1,6 @@
+// LEGACY SYSTEM (planned) / CURRENT SYSTEM (produced — reads from scan_events)
 import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function GET() {
   const supabase = createClient();
@@ -19,27 +20,30 @@ export async function GET() {
   weekAgo.setDate(weekAgo.getDate() - 6);
   weekAgo.setHours(0, 0, 0, 0);
 
-  const [{ data: targets }, { data: scans }] = await Promise.all([
+  const db = createServiceClient();
+
+  const [{ data: targets }, { data: exits }] = await Promise.all([
     supabase
       .from("daily_targets")
       .select("date, target_qty")
       .eq("tenant_id", tenantId)
       .gte("date", weekAgo.toISOString().split("T")[0]),
-    supabase
-      .from("scans")
-      .select("part_id, scanned_at")
-      .eq("status", "completed")
+    db
+      .from("scan_events")
+      .select("scanned_at")
+      .eq("tenant_id", tenantId)
+      .eq("scan_type", "exit")
+      .eq("station_name", "Packaging")
       .gte("scanned_at", weekAgo.toISOString()),
   ]);
 
   const targetMap: Record<string, number> = {};
   for (const t of targets ?? []) targetMap[t.date] = t.target_qty;
 
-  const producedMap: Record<string, Set<string>> = {};
-  for (const s of scans ?? []) {
-    const date = s.scanned_at.split("T")[0];
-    if (!producedMap[date]) producedMap[date] = new Set();
-    if (s.part_id) producedMap[date].add(s.part_id);
+  const producedMap: Record<string, number> = {};
+  for (const e of exits ?? []) {
+    const date = e.scanned_at.split("T")[0];
+    producedMap[date] = (producedMap[date] ?? 0) + 1;
   }
 
   const days = [];
@@ -52,7 +56,7 @@ export async function GET() {
       date,
       label,
       planned: targetMap[date] ?? 0,
-      produced: producedMap[date]?.size ?? 0,
+      produced: producedMap[date] ?? 0,
     });
   }
 

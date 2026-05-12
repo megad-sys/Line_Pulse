@@ -1,39 +1,17 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext } from "react";
 
 interface DemoModeCtx {
   isDemo: boolean;
   toggle: () => void;
 }
 
-const DemoModeContext = createContext<DemoModeCtx>({ isDemo: false, toggle: () => {} });
+const DemoModeContext = createContext<DemoModeCtx>({ isDemo: true, toggle: () => {} });
 
-export function DemoModeProvider({
-  children,
-  defaultIsDemo,
-}: {
-  children: React.ReactNode;
-  defaultIsDemo: boolean;
-}) {
-  const [isDemo, setIsDemo] = useState(defaultIsDemo);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("factoryos-demo");
-    if (stored !== null) setIsDemo(stored === "true");
-    else if (defaultIsDemo) localStorage.setItem("factoryos-demo", "true");
-  }, [defaultIsDemo]);
-
-  const toggle = () => {
-    setIsDemo((prev) => {
-      const next = !prev;
-      localStorage.setItem("factoryos-demo", String(next));
-      return next;
-    });
-  };
-
+export function DemoModeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <DemoModeContext.Provider value={{ isDemo, toggle }}>
+    <DemoModeContext.Provider value={{ isDemo: true, toggle: () => {} }}>
       {children}
     </DemoModeContext.Provider>
   );

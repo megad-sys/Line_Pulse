@@ -176,3 +176,25 @@ export interface AgentAlert {
   resolved_at: string | null;
   resolved_by: string | null;
 }
+
+export interface Recommendation {
+  id: string;
+  option: string;
+  predictedImpact: string;
+  details: string;
+}
+
+export type AgentActionState = "pending-approval" | "executing" | "completed";
+
+export interface AgentAction {
+  id: string;
+  timestamp: string;
+  dataSource: string;
+  analysis: string;
+  recommendations: Recommendation[];
+  selectedRecommendation?: Recommendation;
+  actionTaken?: string;
+  actualResult?: string;
+  status: AgentActionState;
+  savings?: string;
+}

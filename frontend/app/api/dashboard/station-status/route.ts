@@ -1,3 +1,4 @@
+// CURRENT SYSTEM - reads from scan_events/station_config via fetchFromNewTables()
 import { NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
@@ -142,112 +143,10 @@ async function fetchFromNewTables(): Promise<StationStatusResponse | null> {
 
 export async function GET() {
   const supabase = createClient();
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const [
-    { data: lines },
-    { data: allStations },
-    { data: wipParts },
-    { data: reworkParts },
-    { data: todayScans },
-  ] = await Promise.all([
-    supabase
-      .from("production_lines")
-      .select("id, name")
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("line_stations")
-      .select("id, line_id, station_name, sequence_order, target_mins")
-      .order("sequence_order", { ascending: true }),
-    supabase
-      .from("parts")
-      .select("line_id, current_station")
-      .eq("current_status", "wip"),
-    supabase
-      .from("parts")
-      .select("line_id, current_station")
-      .eq("current_status", "failed_qc"),
-    supabase
-      .from("scans")
-      .select("part_id, work_order_id, station_name, status, scanned_at")
-      .gte("scanned_at", todayStart.toISOString())
-      .in("status", ["started", "completed"]),
-  ]);
-
-  if (!lines || lines.length === 0) {
-    // Try new tables (scan_events / station_config)
-    const newTableResult = await fetchFromNewTables();
-    if (newTableResult) {
-      return NextResponse.json(newTableResult satisfies StationStatusResponse);
-    }
-    return NextResponse.json({ lines: MOCK_LINES, isDemo: true } satisfies StationStatusResponse);
-  }
-
-  // Cycle time map: station_name → [minutes between started/completed pairs]
-  const cycleMap: Record<string, number[]> = {};
-  // Completed-today count: station_name → count
-  const completedToday: Record<string, number> = {};
-
-  if (todayScans) {
-    const started: Record<string, Date> = {};
-    for (const scan of todayScans) {
-      const key = `${scan.part_id ?? scan.work_order_id}-${scan.station_name}`;
-      if (scan.status === "started") {
-        started[key] = new Date(scan.scanned_at);
-      } else if (scan.status === "completed") {
-        completedToday[scan.station_name] = (completedToday[scan.station_name] ?? 0) + 1;
-        if (started[key]) {
-          const mins = (new Date(scan.scanned_at).getTime() - started[key].getTime()) / 60_000;
-          if (!cycleMap[scan.station_name]) cycleMap[scan.station_name] = [];
-          cycleMap[scan.station_name].push(mins);
-          delete started[key];
-        }
-      }
-    }
-  }
-
-  // WIP parts at station: line_id → station_name → count
-  const wipAt: Record<string, Record<string, number>> = {};
-  for (const p of wipParts ?? []) {
-    if (!wipAt[p.line_id]) wipAt[p.line_id] = {};
-    wipAt[p.line_id][p.current_station] = (wipAt[p.line_id][p.current_station] ?? 0) + 1;
-  }
-
-  // Rework parts at station: line_id → station_name → count
-  const reworkAt: Record<string, Record<string, number>> = {};
-  for (const p of reworkParts ?? []) {
-    if (!reworkAt[p.line_id]) reworkAt[p.line_id] = {};
-    reworkAt[p.line_id][p.current_station] = (reworkAt[p.line_id][p.current_station] ?? 0) + 1;
-  }
-
-  const result: LineStatus[] = lines.map((line) => {
-    const stations: StationRow[] = (allStations ?? [])
-      .filter((s) => s.line_id === line.id)
-      .map((s) => {
-        const times = cycleMap[s.station_name] ?? [];
-        const avg =
-          times.length > 0
-            ? Math.round((times.reduce((a, b) => a + b, 0) / times.length) * 10) / 10
-            : null;
-        return {
-          station_name:    s.station_name,
-          sequence_order:  s.sequence_order,
-          target_mins:     s.target_mins,
-          parts_here:      wipAt[line.id]?.[s.station_name] ?? 0,
-          rework_parts:    reworkAt[line.id]?.[s.station_name] ?? 0,
-          completed_today: completedToday[s.station_name] ?? 0,
-          avg_cycle_mins:  avg,
-        };
-      });
-
-    const total_wip = stations.reduce((sum, s) => sum + s.parts_here, 0);
-    return { line_id: line.id, line_name: line.name, stations, total_wip };
-  });
-
-  return NextResponse.json({ lines: result, isDemo: false } satisfies StationStatusResponse);
+  const result = await fetchFromNewTables();
+  if (result) return NextResponse.json(result satisfies StationStatusResponse);
+  return NextResponse.json({ lines: MOCK_LINES, isDemo: true } satisfies StationStatusResponse);
 }

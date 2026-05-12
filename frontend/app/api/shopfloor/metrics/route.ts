@@ -1,3 +1,5 @@
+// CURRENT SYSTEM - reads from scan_events/shifts tables
+// Agent pipeline uses this data
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { PartKPIs, ManufacturingKPIs } from "@/lib/types";
@@ -11,6 +13,16 @@ export type ShopfloorPartRow = {
   thisWeek: number;
 };
 
+export type QualityStationRow = {
+  station_name: string;
+  units_processed: number;
+  defect_count: number;
+  defect_rate_pct: number;
+  rework_count: number;
+  rework_rate_pct: number;
+  scrap_count: number;
+};
+
 export interface ShopfloorMetrics {
   hasData: boolean;
   kpis: PartKPIs;
@@ -20,6 +32,7 @@ export interface ShopfloorMetrics {
     rows: ShopfloorPartRow[];
     total: { now: number; today: number; thisWeek: number };
   };
+  qualityByStation: QualityStationRow[];
 }
 
 const LAST_STATION = "Packaging";
@@ -293,6 +306,33 @@ export async function GET() {
     targetCycleTime,
   };
 
+  // ── Quality by station ────────────────────────────────────────
+  const qMap = new Map<string, { defects: number; rework: number; scrap: number; exits: number }>();
+  for (const row of rows) {
+    if (!qMap.has(row.station_name)) qMap.set(row.station_name, { defects: 0, rework: 0, scrap: 0, exits: 0 });
+    const q = qMap.get(row.station_name)!;
+    if (row.scan_type === "defect") q.defects++;
+    if (row.scan_type === "exit") {
+      q.exits++;
+      if (row.disposition === "rework") q.rework++;
+      if (row.disposition === "scrap")  q.scrap++;
+    }
+  }
+  const qualityByStation: QualityStationRow[] = stationNames.map((station) => {
+    const q = qMap.get(station) ?? { defects: 0, rework: 0, scrap: 0, exits: 0 };
+    const defect_rate_pct = q.exits > 0 ? Math.round((q.defects / q.exits) * 1000) / 10 : 0;
+    const rework_rate_pct = q.exits > 0 ? Math.round((q.rework  / q.exits) * 1000) / 10 : 0;
+    return {
+      station_name:     station,
+      units_processed:  q.exits,
+      defect_count:     q.defects,
+      defect_rate_pct,
+      rework_count:     q.rework,
+      rework_rate_pct,
+      scrap_count:      q.scrap,
+    };
+  }).sort((a, b) => b.defect_rate_pct - a.defect_rate_pct);
+
   // ── Top-level KPIs ─────────────────────────────────────────────
   const kpis: PartKPIs = {
     partsInProduction: wipParts.size,
@@ -307,5 +347,6 @@ export async function GET() {
     stationStatus,
     mfgKpis,
     partStatus: { rows: partRows, total: partTotal },
+    qualityByStation,
   } satisfies ShopfloorMetrics);
 }

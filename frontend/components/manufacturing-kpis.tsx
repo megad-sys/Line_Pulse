@@ -1,7 +1,7 @@
+// CURRENT SYSTEM - reads from scan_events via /api/shopfloor/metrics
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useDemoMode } from "@/lib/demo-context";
 import { mockMfgKpis } from "@/lib/mock-data";
 import { apiFetch } from "@/lib/api";
@@ -74,87 +74,12 @@ function defectFlagColor(v: number): CardColor { return v < 5 ? "green" : v <= 1
 function dpmoContext(v: number): string   { return v < 1000 ? "World class" : v < 10000 ? "Good" : "Needs improvement"; }
 
 async function fetchMfgKpis(): Promise<ManufacturingKPIs> {
-  const supabase = createClient();
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const shiftElapsedHours = (Date.now() - todayStart.getTime()) / 3_600_000;
-
-  const [{ data: parts }, { data: scans }] = await Promise.all([
-    supabase.from("parts").select("id, current_status"),
-    supabase
-      .from("scans")
-      .select("part_id, station_name, status, scanned_at, downtime_start, downtime_end")
-      .gte("scanned_at", todayStart.toISOString()),
-  ]);
-
-  const allParts = parts ?? [];
-  const allScans = scans ?? [];
-  const total    = allParts.length;
-  const released = allParts.filter((p) => p.current_status === "done").length;
-  const scrapped = allParts.filter((p) => p.current_status === "scrapped").length;
-  const failed   = allParts.filter((p) => p.current_status === "failed_qc").length;
-
-  if (total === 0) {
-    const res = await apiFetch("/api/shopfloor/metrics");
-    if (res.ok) {
-      const data = await res.json();
-      if (data.hasData && data.mfgKpis) return data.mfgKpis as ManufacturingKPIs;
-    }
-    return mockMfgKpis;
+  const res = await apiFetch("/api/shopfloor/metrics");
+  if (res.ok) {
+    const data = await res.json();
+    if (data.hasData && data.mfgKpis) return data.mfgKpis as ManufacturingKPIs;
   }
-
-  const failedIds = new Set(allScans.filter((s) => s.status === "failed_qc").map((s) => s.part_id));
-  const fpy = Math.round(((total - failedIds.size) / total) * 1000) / 10;
-
-  const throughput = shiftElapsedHours > 0
-    ? Math.round((released / shiftElapsedHours) * 10) / 10
-    : 0;
-
-  const partTimes: Record<string, { min: number; max: number }> = {};
-  for (const s of allScans) {
-    const t = new Date(s.scanned_at).getTime();
-    if (!partTimes[s.part_id]) partTimes[s.part_id] = { min: t, max: t };
-    else {
-      partTimes[s.part_id].min = Math.min(partTimes[s.part_id].min, t);
-      partTimes[s.part_id].max = Math.max(partTimes[s.part_id].max, t);
-    }
-  }
-  const cycleMins = Object.values(partTimes).map(({ min, max }) => (max - min) / 60_000);
-  const avgCycleTime = cycleMins.length > 0
-    ? Math.round(cycleMins.reduce((a, b) => a + b, 0) / cycleMins.length)
-    : 0;
-
-  const scrapRate      = Math.round((scrapped / total) * 1000) / 10;
-  const defectFlagRate = Math.round((failed / total) * 1000) / 10;
-
-  const stationCount = new Set(allScans.map((s) => s.station_name)).size || 1;
-  const failedScans  = allScans.filter((s) => s.status === "failed_qc").length;
-  const dpmo = Math.round((failedScans / (total * stationCount)) * 1_000_000);
-
-  let downtimeMins = 0;
-  for (const s of allScans) {
-    if (s.downtime_start && s.downtime_end) {
-      downtimeMins += (new Date(s.downtime_end).getTime() - new Date(s.downtime_start).getTime()) / 60_000;
-    }
-  }
-
-  const quality = released / total;
-  const targetRate = 80 / 8;
-  const performance = shiftElapsedHours > 0
-    ? Math.min(1, (released / shiftElapsedHours) / targetRate)
-    : 0;
-  const availability = shiftElapsedHours > 0
-    ? Math.max(0, 1 - downtimeMins / (shiftElapsedHours * 60))
-    : 1;
-  const oee = Math.round(availability * performance * quality * 100);
-
-  return {
-    oee, fpy, throughput, avgCycleTime,
-    scrapRate, defectFlagRate, dpmo,
-    downtimeMins: Math.round(downtimeMins),
-    totalStarted: total,
-    targetCycleTime: 32,
-  };
+  return mockMfgKpis;
 }
 
 export default function ManufacturingKPIs() {

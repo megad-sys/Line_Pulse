@@ -87,9 +87,12 @@ export default function StationStatusTable() {
       return;
     }
     try {
-      const res = await apiFetch("/api/dashboard/station-status");
+      const res = await apiFetch("/api/shopfloor/metrics");
       if (res.ok) {
-        const json: StationStatusResponse = await res.json();
+        const payload = await res.json();
+        const json: StationStatusResponse = payload.hasData && payload.stationStatus
+          ? payload.stationStatus
+          : { lines: [], isDemo: true };
         setData(json);
         setSelectedLineId((prev) => prev || json.lines[0]?.line_id || "");
       }

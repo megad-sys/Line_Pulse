@@ -12,22 +12,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (!user) redirect("/login");
 
-  const [
-    { data: profile },
-    { count: linesCount },
-  ] = await Promise.all([
-    supabase.from("profiles").select("full_name").eq("id", user.id).single(),
-    supabase.from("production_lines").select("*", { count: "exact", head: true }),
-  ]);
+  const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
 
   const userName     = profile?.full_name ?? user.email ?? "User";
   const userEmail    = user.email ?? "";
   const userInitials = initials(userName);
-  const defaultIsDemo = (linesCount ?? 0) === 0;
 
   return (
     <ThemeProvider>
-      <DemoModeProvider defaultIsDemo={defaultIsDemo}>
+      <DemoModeProvider>
         <ToastProvider>
           <div className="dash min-h-screen flex flex-col" style={{ backgroundColor: "var(--bg)", color: "var(--text)" }}>
             <Nav userName={userName} userEmail={userEmail} userInitials={userInitials} />
