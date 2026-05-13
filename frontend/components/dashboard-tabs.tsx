@@ -3,13 +3,11 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { DataSourceModal } from "@/components/data-source-modal";
-import { LayoutGrid, BarChart2, Settings2, PenLine, Bot } from "lucide-react";
+import { LayoutGrid, Settings2, PenLine, Bot } from "lucide-react";
 import StationStatusTable from "@/components/station-status-table";
 import PartStatusTable from "@/components/part-status-table";
-import ShiftAnalysisPanel from "@/components/shift-analysis-panel";
 import ManufacturingKPIs from "@/components/manufacturing-kpis";
 import PlannedVsProduced from "@/components/planned-vs-produced";
-import EscalationCenter from "@/components/escalation-center";
 import CustomerLineSetup from "@/components/customer-line-setup";
 import Whiteboard from "@/components/whiteboard";
 import AiAgentPanel from "@/components/ai-agent-panel";
@@ -19,15 +17,16 @@ import { useDemoMode } from "@/lib/demo-context";
 import { mockPartKpis } from "@/lib/mock-data";
 import type { PartKPIs } from "@/lib/types";
 
-type Tab = "shopfloor" | "analytics" | "setup" | "whiteboard" | "agents";
+type Tab = "analytics" | "setup" | "whiteboard" | "agents";
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "shopfloor",  label: "Shopfloor",  icon: <LayoutGrid size={18} /> },
+  { id: "analytics",  label: "Analytics",  icon: <LayoutGrid size={18} /> },
   { id: "agents",     label: "Agents",     icon: <Bot        size={18} /> },
-  { id: "analytics",  label: "Analytics",  icon: <BarChart2  size={18} /> },
   { id: "setup",      label: "Setup",      icon: <Settings2  size={18} /> },
   { id: "whiteboard", label: "Board",      icon: <PenLine    size={18} /> },
 ];
+
+const VALID_TABS = ["analytics", "setup", "whiteboard", "agents"];
 
 export default function DashboardTabs({
   serverKpis,
@@ -42,15 +41,16 @@ export default function DashboardTabs({
   const [activeView, setActiveView] = useState<"production" | "quality">("production");
   const [activeTab, setActiveTab] = useState<Tab>(() => {
     const t = searchParams.get("tab");
-    return (["shopfloor", "analytics", "setup", "whiteboard", "agents"].includes(t ?? "") ? t : "shopfloor") as Tab;
+    // Legacy "shopfloor" URL param → analytics
+    if (t === "shopfloor") return "analytics";
+    return (VALID_TABS.includes(t ?? "") ? t : "analytics") as Tab;
   });
   const { isDemo } = useDemoMode();
 
   useEffect(() => {
     const t = searchParams.get("tab");
-    if (t && ["shopfloor", "analytics", "setup", "whiteboard", "agents"].includes(t)) {
-      setActiveTab(t as Tab);
-    }
+    if (t === "shopfloor") { setActiveTab("analytics"); return; }
+    if (t && VALID_TABS.includes(t)) setActiveTab(t as Tab);
   }, [searchParams]);
 
   const kpis     = isDemo ? mockPartKpis : serverKpis;
@@ -65,8 +65,8 @@ export default function DashboardTabs({
       {/* ── Content area ──────────────────────────────────────── */}
       <div className="flex-1 min-w-0 pr-4">
 
-        {/* ── Shopfloor tab ──────────────────────────────────── */}
-        {activeTab === "shopfloor" && (
+        {/* ── Analytics tab (formerly Shopfloor) ─────────────── */}
+        {activeTab === "analytics" && (
           <div className="flex flex-col gap-5">
 
             {/* Dashboard view switcher */}
@@ -80,7 +80,6 @@ export default function DashboardTabs({
                   style={{
                     backgroundColor: activeView === view ? "#2e2e2b" : "transparent",
                     color: activeView === view ? "#f0ede8" : "var(--muted)",
-                    borderLeft: activeView === view ? "none" : "none",
                   }}>
                   {view === "production" ? "Production Dashboard" : "Quality Dashboard"}
                 </button>
@@ -169,14 +168,6 @@ export default function DashboardTabs({
             {activeView === "quality" && (
               <ScrapReworkStats />
             )}
-          </div>
-        )}
-
-        {/* ── Analytics tab ──────────────────────────────────── */}
-        {activeTab === "analytics" && (
-          <div className="flex flex-col gap-6">
-            <ShiftAnalysisPanel />
-            <EscalationCenter />
           </div>
         )}
 

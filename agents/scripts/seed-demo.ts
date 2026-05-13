@@ -102,7 +102,7 @@ async function main() {
   for (const wo of WORK_ORDERS) {
     const { data: woRow, error: woErr } = await db
       .from("work_orders")
-      .insert({
+      .upsert({
         tenant_id: TENANT_ID,
         agent_shift_id: shiftId,
         wo_number: wo.wo_number,
@@ -113,7 +113,7 @@ async function main() {
         priority: wo.priority,
         due_date: due.toISOString(),
         customer_priority: wo.cp,
-      })
+      }, { onConflict: "tenant_id,wo_number" })
       .select("id")
       .single();
 
@@ -221,10 +221,21 @@ async function main() {
     process.stdout.write(`  ${Math.min(i + BATCH, scanBatch.length)}/${scanBatch.length} scan events inserted...\r`);
   }
 
+  // ── Seed tenant integrations ───────────────────────────────
+  await db.from("tenant_integrations").upsert([
+    { tenant_id: TENANT_ID, tool_name: "email",                     level: 1, enabled: true,  config: { from: "alerts@linepulse.io", supervisor_email: "gadmenna97@gmail.com" } },
+    { tenant_id: TENANT_ID, tool_name: "log_issue",                 level: 1, enabled: true,  config: {} },
+    { tenant_id: TENANT_ID, tool_name: "change_order_priority",     level: 2, enabled: true,  config: {} },
+    { tenant_id: TENANT_ID, tool_name: "create_maintenance_ticket", level: 2, enabled: true,  config: {} },
+    { tenant_id: TENANT_ID, tool_name: "slack",                     level: 1, enabled: true,  config: { webhook_url: process.env.SLACK_WEBHOOK_URL ?? "" } },
+  ], { onConflict: "tenant_id,tool_name" });
+  console.log("✓ 5 tenant integrations seeded (email ✓, log_issue ✓, change_order_priority ✓, create_maintenance_ticket ✓, slack ✗)");
+
   console.log(`\n\n✓ Seeded:`);
   console.log(`  1 shift  (today, 06:00–14:00)`);
   console.log(`  3 work orders`);
   console.log(`  ${scanBatch.length} scan events`);
+  console.log(`  5 tenant integrations (4 enabled, 1 disabled)`);
   console.log(`  Visual Inspection: 2.3× target, 15% defect rate, 2 stalls`);
   console.log(`  Shift ID: ${shiftId}`);
   console.log(`\nTo run agents against this shift:`);

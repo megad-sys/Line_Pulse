@@ -26,7 +26,8 @@ Respond ONLY in JSON matching this schema exactly:
   "bottleneck_detected": boolean,
   "bottleneck_duration_mins": number | null,
   "wip_count": number,
-  "recommendation": string
+  "recommendation": string,
+  "recommended_action": "notify_supervisor" | "log_issue" | "escalate" | "no_action"
 }
 
 Rules:
@@ -37,6 +38,7 @@ Rules:
 - worst_station: station with the highest bottleneck_score
 - bottleneck_score > 200 → severity "critical", > 150 → "warning", else "ok"
 - recommendation: one concrete sentence — name the exact station and what to do
+- recommended_action: critical or action_required true → "escalate", warning → "notify_supervisor", ok → "log_issue"
 
 Write like a senior floor manager. Direct, no jargon, no filler.
 Name exact stations, work orders, and operators where relevant.`;
@@ -58,6 +60,7 @@ const ProductionSchema = z
     bottleneck_duration_mins: z.number().nullable(),
     wip_count:               z.number(),
     recommendation:          z.string(),
+    recommended_action:      z.enum(["notify_supervisor", "log_issue", "escalate", "no_action"]),
   })
   .refine(
     (d) => {

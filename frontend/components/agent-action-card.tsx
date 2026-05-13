@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Database, TrendingUp, ThumbsUp, CheckCircle2, Loader2, PenLine } from "lucide-react";
-import { apiFetch } from "@/lib/api";
+import { Database, TrendingUp, ThumbsUp, CheckCircle2, Loader2, PenLine, AlertCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import type { AgentAction, AgentActionState, Recommendation } from "@/lib/types";
 
 interface AgentActionCardProps {
@@ -40,31 +40,108 @@ export default function AgentActionCard({ action, agentId, onApprove }: AgentAct
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [showCustom, setShowCustom] = useState(false);
   const [customText, setCustomText] = useState("");
+  const [approveError, setApproveError] = useState<string | null>(null);
+  const [executionResult, setExecutionResult] = useState<{
+    execution_result: string;
+    actions_taken: string[];
+    tools_used: string[];
+  } | null>(null);
 
   async function handleApproveRec(rec: Recommendation) {
     setApprovingId(rec.id);
+    setApproveError(null);
     try {
-      await apiFetch("/api/agent/actions/approve", {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const res = await fetch("/api/agent/actions/approve", {
         method: "POST",
-        body: JSON.stringify({ actionId: action.id, agentType: agentId, recommendationId: rec.id }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recommendation: rec.option,
+          approvedBy: user?.email ?? "operator",
+          agentType: agentId,
+          shiftId: action.shiftId ?? null,
+          agentResult: {
+            severity:           action.severity,
+            worst_station:      action.worstStation,
+            bottleneck_score:   action.bottleneckScore,
+            action_required:    action.actionRequired,
+            recommended_action: action.recommendedAction,
+          },
+        }),
       });
-    } catch { /* optimistic */ }
-    onApprove(action.id, rec.id);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        console.error("Approve failed:", err);
+        setApproveError(err.error ?? "Approval failed — please try again.");
+        setApprovingId(null);
+        return;
+      }
+
+      const data = await res.json() as {
+        execution_result: string;
+        actions_taken: string[];
+        tools_used: string[];
+      };
+      setExecutionResult(data);
+      onApprove(action.id, rec.id);
+    } catch (err) {
+      console.error("Approve failed:", err);
+      setApproveError("Network error — please try again.");
+    }
     setApprovingId(null);
   }
 
   async function handleSubmitCustom() {
     if (!customText.trim()) return;
     setApprovingId("custom");
+    setApproveError(null);
     try {
-      await apiFetch("/api/agent/actions/approve", {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const res = await fetch("/api/agent/actions/approve", {
         method: "POST",
-        body: JSON.stringify({ actionId: action.id, agentType: agentId, recommendationId: "custom", customInstruction: customText.trim() }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recommendation: customText.trim(),
+          approvedBy: user?.email ?? "operator",
+          agentType: agentId,
+          customInstruction: customText.trim(),
+          shiftId: action.shiftId ?? null,
+          agentResult: {
+            severity:           action.severity,
+            worst_station:      action.worstStation,
+            bottleneck_score:   action.bottleneckScore,
+            action_required:    action.actionRequired,
+            recommended_action: action.recommendedAction,
+          },
+        }),
       });
-    } catch { /* optimistic */ }
-    onApprove(action.id, "custom", customText.trim());
-    setCustomText("");
-    setShowCustom(false);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        console.error("Approve failed:", err);
+        setApproveError(err.error ?? "Approval failed — please try again.");
+        setApprovingId(null);
+        return;
+      }
+
+      const data = await res.json() as {
+        execution_result: string;
+        actions_taken: string[];
+        tools_used: string[];
+      };
+      setExecutionResult(data);
+      onApprove(action.id, "custom", customText.trim());
+      setCustomText("");
+      setShowCustom(false);
+    } catch (err) {
+      console.error("Approve failed:", err);
+      setApproveError("Network error — please try again.");
+    }
     setApprovingId(null);
   }
 
@@ -188,17 +265,29 @@ export default function AgentActionCard({ action, agentId, onApprove }: AgentAct
               </div>
             )}
           </div>
+
+          {/* Approve error */}
+          {approveError && (
+            <div className="flex items-center gap-2 rounded-lg border px-3 py-2"
+              style={{ backgroundColor: "rgba(239,68,68,0.07)", borderColor: "rgba(239,68,68,0.25)" }}>
+              <AlertCircle size={13} style={{ color: "#f87171" }} />
+              <p className="text-xs" style={{ color: "#f87171" }}>{approveError}</p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Approved action — shown when executing or completed */}
+      {/* AI Recommendation — shown when executing or completed */}
       {(action.status === "executing" || action.status === "completed") && action.selectedRecommendation && (
-        <div className="rounded-lg border p-3"
+        <div className="rounded-lg border p-3 flex flex-col gap-1"
           style={{ backgroundColor: "rgba(74,222,128,0.07)", borderColor: "rgba(74,222,128,0.25)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#4ade80" }}>
-            Approved Action
+          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#4ade80" }}>
+            AI Recommendation
           </p>
           <p className="text-xs" style={{ color: "var(--text)" }}>{action.selectedRecommendation.option}</p>
+          <p className="text-[10px]" style={{ color: "var(--muted)" }}>
+            Pending human follow-through — the system cannot carry this out automatically.
+          </p>
         </div>
       )}
 
@@ -211,13 +300,41 @@ export default function AgentActionCard({ action, agentId, onApprove }: AgentAct
         </div>
       )}
 
-      {/* Result — only when completed */}
+      {/* System Actions Executed — only when completed */}
       {action.status === "completed" && (
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-start gap-2">
-            <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: "#4ade80" }} />
-            <p className="text-xs" style={{ color: "var(--text)" }}>{action.actualResult}</p>
-          </div>
+          {executionResult && executionResult.actions_taken.length > 0 ? (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--muted)" }}>
+                System Actions Executed
+              </p>
+              <div className="flex flex-col gap-1">
+                {executionResult.actions_taken.map((a, i) => (
+                  <div key={i} className="flex items-start gap-1.5">
+                    <CheckCircle2 size={12} className="shrink-0 mt-0.5" style={{ color: "#4ade80" }} />
+                    <p className="text-xs" style={{ color: "var(--text)" }}>{a}</p>
+                  </div>
+                ))}
+              </div>
+              {executionResult.tools_used.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {executionResult.tools_used.map((t) => (
+                    <span key={t} className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                      style={{ backgroundColor: "rgba(96,165,250,0.1)", color: "#60a5fa", border: "1px solid rgba(96,165,250,0.2)" }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : action.actualResult ? (
+            /* Pre-completed cards (e.g. no action required) — no executor ran */
+            <div className="flex items-start gap-2">
+              <CheckCircle2 size={14} className="shrink-0 mt-0.5" style={{ color: "#4ade80" }} />
+              <p className="text-xs" style={{ color: "var(--text)" }}>{action.actualResult}</p>
+            </div>
+          ) : null}
+
           {action.savings && (
             <div className="rounded-lg border px-3 py-2"
               style={{ backgroundColor: "rgba(251,191,36,0.08)", borderColor: "rgba(251,191,36,0.25)" }}>

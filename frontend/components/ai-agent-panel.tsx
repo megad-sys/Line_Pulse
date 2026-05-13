@@ -5,6 +5,7 @@ import { Bot, RefreshCw } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useDemoMode } from "@/lib/demo-context";
 import AgentActionCard from "@/components/agent-action-card";
+import ActionTrackerTable from "@/components/action-tracker-table";
 import type { AgentAction, OrchestratorResult, ProductionResult, QualityResult, PlanningResult } from "@/lib/types";
 import type { UnifiedAlert } from "@/app/api/agent/alerts/route";
 
@@ -31,6 +32,12 @@ function orchToActions(result: OrchestratorResult): Record<string, AgentAction[]
   return {
     production: prod ? [{
       id: `prod-${result.computed_at}`,
+      shiftId:           result.shift_id,
+      severity:          prod.severity,
+      worstStation:      prod.worst_station,
+      bottleneckScore:   prod.bottleneck_score,
+      actionRequired:    prod.action_required,
+      recommendedAction: prod.recommended_action,
       timestamp: timeAgo(result.computed_at),
       dataSource: `${summary.stations_count} stations · ${summary.units_completed} units completed · ${summary.hours_remaining.toFixed(1)}h remaining`,
       analysis: prod.one_line_summary + (prod.handover_notes ? " " + prod.handover_notes : ""),
@@ -54,6 +61,10 @@ function orchToActions(result: OrchestratorResult): Record<string, AgentAction[]
 
     quality: qual ? [{
       id: `qual-${result.computed_at}`,
+      shiftId:        result.shift_id,
+      severity:       qual.severity,
+      worstStation:   qual.worst_station,
+      actionRequired: qual.severity !== "ok",
       timestamp: timeAgo(result.computed_at),
       dataSource: `${summary.stations_count} stations monitored`,
       analysis: `Worst station: ${qual.worst_station} at ${qual.worst_station_defect_rate_pct.toFixed(1)}% defect rate. ${qual.total_defects} total defects. Overall: ${qual.overall_defect_rate_pct.toFixed(1)}%. Trend: ${qual.trend}.`,
@@ -77,6 +88,8 @@ function orchToActions(result: OrchestratorResult): Record<string, AgentAction[]
 
     planning: plan ? [{
       id: `plan-${result.computed_at}`,
+      shiftId:        result.shift_id,
+      actionRequired: plan.gap_units > 0,
       timestamp: timeAgo(result.computed_at),
       dataSource: `${plan.at_risk_work_orders.length} work orders at risk`,
       analysis: `Plan attainment: ${plan.plan_attainment_pct.toFixed(0)}%. Projected ${plan.projected_eod_units} vs ${plan.planned_units} planned. Gap: ${plan.gap_units} units. Closeable this shift: ${plan.closeable_this_shift ? "Yes" : "No"}.`,
@@ -117,15 +130,21 @@ function alertsToActions(alerts: UnifiedAlert[]): AgentAction[] {
 const DEMO_ACTIONS: Record<string, AgentAction[]> = {
   production: [{
     id: "demo-prod-1",
+    shiftId: "demo-shift-1",
     timestamp: "2 min ago",
     dataSource: "5 stations · 45 units completed · 4.0h remaining",
     analysis: "Visual Inspection is running at 14.8min avg vs 6.4min target — 131% over cycle. 5 units queued, machine down for 18min this shift. Throughput loss estimated at ~6 units.",
     recommendations: [
-      { id: "r1", option: "Redeploy operator from Packaging (idle) to Visual Inspection to clear 5-unit queue", predictedImpact: "~30min queue clearance", details: "Packaging WIP is 0 — operator can be spared for this shift segment" },
+      { id: "r1", option: "Redeploy operator from Packaging (idle) to Visual Inspection to clear 5-unit queue", predictedImpact: "Severity: critical", details: "Packaging WIP is 0 — operator can be spared for this shift segment" },
       { id: "r2", option: "Reduce batch size entering Visual Inspection to 1 unit at a time", predictedImpact: "Prevents further queue growth", details: "Buffer control reduces downstream pressure on Functional Test" },
       { id: "r3", option: "Escalate to floor manager for downtime root cause investigation", predictedImpact: "Human oversight — downtime prevented", details: "18min downtime this shift warrants engineering review" },
     ],
     status: "pending-approval",
+    severity:          "critical",
+    worstStation:      "Visual Inspection",
+    bottleneckScore:   231,
+    actionRequired:    true,
+    recommendedAction: "escalate",
   }],
   quality: [{
     id: "demo-qual-1",
@@ -187,6 +206,7 @@ export default function AiAgentPanel() {
   const [contextPill, setContextPill] = useState("");
   const [loading, setLoading] = useState(false);
   const [lastRan, setLastRan] = useState<string | null>(null);
+  const [trackerRefresh, setTrackerRefresh] = useState(0);
 
   const runAnalysis = useCallback(async () => {
     if (isDemo) {
@@ -223,6 +243,7 @@ export default function AiAgentPanel() {
   }, [runAnalysis]);
 
   function handleApprove(actionId: string, recId: string, customInstruction?: string) {
+    setTrackerRefresh((n) => n + 1);
     setActions((prev) => {
       const next = { ...prev };
       for (const agentId of Object.keys(next)) {
@@ -363,6 +384,14 @@ export default function AiAgentPanel() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Operational Action Log — DB source of truth */}
+        <div className="border-t pt-4" style={{ borderColor: "var(--border)" }}>
+          <ActionTrackerTable
+            agentType={activeAgent}
+            refreshTrigger={trackerRefresh}
+          />
         </div>
       </div>
     </div>

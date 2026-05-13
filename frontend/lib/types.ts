@@ -121,6 +121,7 @@ export interface ProductionResult {
   bottleneck_duration_mins: number | null;
   wip_count: number;
   recommendation: string;
+  recommended_action: "notify_supervisor" | "log_issue" | "escalate" | "no_action";
 }
 
 export interface QualityResult {
@@ -197,4 +198,10 @@ export interface AgentAction {
   actualResult?: string;
   status: AgentActionState;
   savings?: string;
+  shiftId?: string;
+  severity?:           "critical" | "warning" | "ok";
+  worstStation?:       string;
+  bottleneckScore?:    number;
+  actionRequired?:     boolean;
+  recommendedAction?:  "notify_supervisor" | "log_issue" | "escalate" | "no_action";
 }
