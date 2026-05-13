@@ -2,43 +2,13 @@
 
 AI agents that monitor, decide, and act on your production lines. Operators approve recommendations in one click — LinePulse coordinates the rest across Slack, email, and operational logs automatically.
 
----
-
-## Architecture
-
-```
-factoryos-mvp/
-├── frontend/          Next.js 14 (App Router) — dashboard, landing page, auth, API routes
-│   ├── app/
-│   │   ├── (app)/    Protected dashboard (Analytics, Agents, Setup, Board tabs)
-│   │   ├── (auth)/   Login / signup
-│   │   ├── api/      API routes (agent, scan, import, shopfloor, insights…)
-│   │   └── page.tsx  Public landing page
-│   └── components/   UI — dashboard tabs, agent cards, action tracker table
-├── agents/            TypeScript agent layer — runs inside the Next.js process
-│   ├── lib/
-│   │   ├── agents/   production.ts · quality.ts · planning.ts
-│   │   ├── tools/    level1/ — log_issue · send_email · slack
-│   │   ├── compute.ts        Shopfloor metrics (cycle times, OEE, defect rates)
-│   │   ├── orchestrator.ts   Runs all agents in parallel; merges results
-│   │   ├── executor.ts       Deterministic tool routing + dispatch + Groq summary
-│   │   └── router.ts         Routes recommended_action → tool list (no LLM)
-│   └── scripts/      seed-demo.ts — populate demo tenant data
-└── supabase/
-    └── migrations/   011 schema migrations (multi-tenant, RLS, agent tables)
-```
-
-The `agents/` library is imported directly by Next.js API routes via the `@agents` path alias — no separate service or network hop.
-
----
-
 ## How It Works
 
 ### 1. Data collection
-Scan events arrive via QR scan (`/api/scan`) or CSV import (`/api/import`). Each event records a part passing through a station with a timestamp.
+Parts are scanned at each station via QR code or imported from CSV. Each scan records a part, station, and timestamp — building a live picture of the production line.
 
 ### 2. Agent analysis
-`POST /api/agent/analyse` runs three agents in parallel against the current shift's scan events:
+Three agents run in parallel against the current shift's data:
 
 | Agent | What it detects |
 |---|---|
@@ -46,45 +16,33 @@ Scan events arrive via QR scan (`/api/scan`) or CSV import (`/api/import`). Each
 | **Quality** | Defect rates by station / operator / part, trend direction |
 | **Planning** | Plan attainment, at-risk work orders, recommended sequence |
 
-Each agent calls Groq (Llama 3.3-70B) with structured JSON output validated by Zod.
-
 ### 3. Operator approval
-The dashboard surfaces recommendations. The operator clicks **Approve** on one option (or writes a custom instruction). This calls `POST /api/agent/actions/approve`.
+The dashboard surfaces each agent's findings and recommended actions. The operator approves one option in a single click, or writes a custom instruction.
 
 ### 4. Execution
-The executor deterministically routes the approved action to tools — no LLM call for routing:
+Once approved, LinePulse automatically coordinates the downstream response:
 
-```
-recommended_action → router.ts → [log_issue, slack, send_email]
-                               ↓
-                    dispatchTool() runs each in parallel
-                               ↓
-                    Groq writes a one-sentence system summary
-                               ↓
-                    agent_actions row: awaiting_human_action
-```
+**System-executed actions** (logged and shown in the Action Tracker):
+- Slack notification sent to the production channel
+- Email alert sent to the supervisor
+- Issue logged in the operational record
 
-**System-executed actions** (logged in DB, shown in Action Tracker):
-- `log_issue` — writes a row to `agent_alerts`
-- `send_email` — Resend REST API
-- `slack` — Slack Block Kit webhook
-
-**Human-required actions** (shown as AI Recommendation, pending human follow-through):
+**Human-required actions** (shown as the AI Recommendation, pending human follow-through):
 - Operator reallocation, physical inspection, root cause investigation
 
 ### 5. Action Tracker
-`GET /api/agent/actions` returns all agent_actions for the tenant, joined with agent_alerts for station + severity. The Action Log table in the Agents tab reads from the DB — state persists across page refreshes.
+The Action Log table shows every approved action sourced directly from the database — station, recommendation, priority, system actions executed, and current status. State persists across page refreshes.
 
 ---
 
-## Status Model
+## Action Status Model
 
 | Status | Meaning |
 |---|---|
-| `executing` | Executor running tools |
-| `awaiting_human_action` | System tools completed; human must carry out the recommendation |
-| `completed` | Reserved for explicit human confirmation (future) |
-| `failed` | Executor threw an error |
+| Executing | System is processing the approved action |
+| Awaiting Human Action | Notifications sent; operator must carry out the recommendation |
+| Completed | Human confirmed the action was completed |
+| Failed | Execution error — action was not carried out |
 
 ---
 
@@ -187,7 +145,7 @@ CRON_SECRET
 NEXT_PUBLIC_APP_URL
 ```
 
-Configure per-tenant integrations (Slack webhook URL, supervisor email) in the `tenant_integrations` table — not in env vars.
+Slack webhook URLs and supervisor email addresses are configured per tenant in the database — not in env vars.
 
 ---
 
