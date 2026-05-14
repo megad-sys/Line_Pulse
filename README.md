@@ -1,11 +1,23 @@
 # LinePulse
 
-AI agents that monitor, decide, and act on your production lines. Operators approve recommendations in one click — LinePulse coordinates the rest across Slack, email, and operational logs automatically.
+LinePulse is the AI operations layer for manufacturing. It plugs into your existing MES — or runs standalone if you don't have one — and turns plant data into decisions and actions. Three agents run continuously: Production (bottleneck triage), Quality (defect intervention), and Planning (work order sequencing). Operators approve recommendations in one click. LinePulse handles the rest.
+
+## Data Sources
+
+| Source | Status |
+|---|---|
+| **QR scan capture** (built-in) | Available — zero hardware beyond a phone |
+| **CSV import** | Available — bulk scan event ingestion |
+| **MES connectors** (Ignition, Tulip, MachineMetrics, Plex) | Available on request — in active development with design partners |
+| **API / webhook ingestion** | Available on request |
+| **ERP export** | Available via CSV — direct connectors planned |
+
+LinePulse is source-agnostic. The same agent layer runs regardless of where your data comes from.
 
 ## How It Works
 
-### 1. Data collection
-Parts are scanned at each station via QR code or imported from CSV. Each scan records a part, station, and timestamp — building a live picture of the production line.
+### 1. Data in
+Connect your MES export, drop in a CSV, or use the built-in QR scan layer. Each data point records a part, station, and timestamp — building a live picture of the production line regardless of source.
 
 ### 2. Agent analysis
 Three agents run in parallel against the current shift's data:

@@ -5,6 +5,7 @@ import type { AgentContext } from "../compute";
 // ── System prompt ─────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `You are a production intelligence agent for a manufacturing shop floor.
+You receive production data that may come from any source — an MES integration, QR scan events, CSV import, or API feed. Treat all data the same regardless of origin.
 You are responsible for two things: (1) identifying the worst bottleneck on the floor, and (2) writing a concise shift briefing.
 
 Before responding, reason through:

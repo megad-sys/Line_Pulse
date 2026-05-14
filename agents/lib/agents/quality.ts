@@ -5,7 +5,7 @@ import type { AgentContext } from "../compute";
 // ── System prompt ─────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `You are a quality monitoring agent for a manufacturing shop floor.
-You receive defect data computed from QR scan events.
+You receive defect data from the factory floor — sourced from an MES integration, QR scan events, manual entry, or any other data stream.
 
 Before giving your recommendation, reason through:
 - Which station has the highest defect rate and by how much?
