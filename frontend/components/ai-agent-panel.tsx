@@ -355,6 +355,20 @@ export default function AiAgentPanel() {
           </div>
         </div>
 
+        {/* Execution layer notice for non-production agents */}
+        {(activeAgent === "quality" || activeAgent === "planning") && (
+          <div className="flex items-start gap-2 rounded-lg border px-3 py-2.5"
+            style={{ borderColor: "#854d0e", backgroundColor: "#1c1003" }}>
+            <span className="text-xs mt-px">⚠️</span>
+            <p className="text-xs leading-relaxed" style={{ color: "#fbbf24" }}>
+              <span className="font-semibold">Execution layer not connected.</span>{" "}
+              This agent can surface recommendations but cannot act on them automatically.
+              The Production agent is the only agent currently wired to an execution layer (Slack notifications).
+              Slack integration for this agent is coming soon.
+            </p>
+          </div>
+        )}
+
         {/* Agent Activity */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">

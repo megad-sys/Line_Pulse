@@ -59,6 +59,9 @@ function LandingNav() {
           <a href="#features" className="hidden text-sm text-[#1a1916]/80 hover:text-[#1a1916] sm:inline">
             Features
           </a>
+          <a href="/login" className="hidden text-sm text-[#1a1916]/80 hover:text-[#1a1916] sm:inline">
+            Dashboard
+          </a>
           <a
             href={BOOK_DEMO_URL}
             target="_blank"
@@ -383,6 +386,47 @@ function HowItWorks() {
   );
 }
 
+function DashboardPreview() {
+  return (
+    <section className="py-24 sm:py-28">
+      <Container>
+        <div className="max-w-2xl">
+          <Reveal>
+            <MonoLabel>The Dashboard</MonoLabel>
+          </Reveal>
+          <Reveal delay={80}>
+            <h2 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight text-[#1a1916] sm:text-5xl">
+              Your entire floor, visible from one screen.
+            </h2>
+          </Reveal>
+          <Reveal delay={160}>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#9a9688]">
+              Live KPIs, station-by-station status, and AI agent recommendations — all in one place.
+              No configuration needed. Data starts flowing the moment workers begin scanning.
+            </p>
+          </Reveal>
+          <Reveal delay={240}>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <a
+                href="/login"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-[#1a1916] px-5 text-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1a1916]/90"
+              >
+                View Dashboard →
+              </a>
+              <span className="text-sm text-[#9a9688]">Login required · Demo data available</span>
+            </div>
+          </Reveal>
+        </div>
+
+        <Reveal delay={320} className="mt-14 flex flex-col gap-6">
+          <DashboardMockup />
+          <AgentMockup />
+        </Reveal>
+      </Container>
+    </section>
+  );
+}
+
 function Features() {
   const features = [
     { title: "Real-time floor visibility",  body: "Parts tracked at every station, live." },
@@ -487,6 +531,7 @@ export default function LandingPage() {
       <Problem />
       <Solution />
       <HowItWorks />
+      <DashboardPreview />
       <Features />
       <CTA />
       <Footer />
