@@ -150,6 +150,11 @@ const DEMO_ACTIONS: Record<string, AgentAction[]> = {
     bottleneckScore:   231,
     actionRequired:    true,
     recommendedAction: "escalate",
+    checked:       "Cycle times at all 5 stations, WIP depth per station, active stall flags, downtime events, plan attainment at the 4-hour mark.",
+    found:         "Visual Inspection at 14.8 min avg vs 6.4 min target (2.3×). 5 parts queued. Station was down 18 min this shift. Packaging running at target with 0 WIP — operator underutilised. Shift on pace for ~90/150 units.",
+    why:           "Packaging is at zero WIP and on target, meaning its operator can be spared without impacting that station's output. Moving them to Visual Inspection directly addresses the 5-unit backlog and the 18-min stall pattern. If nothing changes, the shift ends ~60 units short of plan. The redeployment is the only available lever that doesn't require external resources.",
+    handoverNotes: "Visual Inspection stall is recurring — check fixture alignment and operator rotation before next shift starts. Downtime root cause not yet identified.",
+    recommendation: "Redeploy operator from Packaging to Visual Inspection for the remainder of the shift.",
   }],
   quality: [{
     id: "demo-qual-1",

@@ -51,47 +51,34 @@ function buildBlocks(input: SlackToolInput): object[] {
     { type: "divider" },
   ];
 
-  // What I checked
-  if (checked) {
-    blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*What I checked*\n${checked}`,
-      },
-    });
+  // What I checked + What I found (only render section + divider if at least one exists)
+  if (checked || found) {
+    if (checked) {
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: `*What I checked*\n${checked}` },
+      });
+    }
+    if (found) {
+      blocks.push({
+        type: "section",
+        text: { type: "mrkdwn", text: `*What I found*\n${found}` },
+      });
+    }
+    blocks.push({ type: "divider" });
   }
-
-  // What I found
-  if (found) {
-    blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*What I found*\n${found}`,
-      },
-    });
-  }
-
-  blocks.push({ type: "divider" });
 
   // Recommendation
   blocks.push({
     type: "section",
-    text: {
-      type: "mrkdwn",
-      text: `*Recommendation*\n${recommendation}`,
-    },
+    text: { type: "mrkdwn", text: `*Recommendation*\n${recommendation}` },
   });
 
   // Why
   if (why) {
     blocks.push({
       type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Why*\n${why}`,
-      },
+      text: { type: "mrkdwn", text: `*Why*\n${why}` },
     });
   }
 
