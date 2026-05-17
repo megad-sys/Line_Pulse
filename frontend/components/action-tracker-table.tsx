@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CheckCircle2, Loader2, AlertCircle, UserCheck, Clock } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle, UserCheck, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 
 type ActionStatus = "executing" | "awaiting_human_action" | "completed" | "failed";
 
@@ -29,7 +29,7 @@ function StatusBadge({ status }: { status: ActionStatus }) {
     },
     awaiting_human_action: {
       color: "#fbbf24", bg: "rgba(251,191,36,0.1)", border: "rgba(251,191,36,0.3)",
-      label: "Awaiting Human Action",
+      label: "Awaiting Action",
       icon: <UserCheck size={10} />,
     },
     completed: {
@@ -54,30 +54,18 @@ function StatusBadge({ status }: { status: ActionStatus }) {
 }
 
 function PriorityBadge({ severity }: { severity: string | null }) {
-  if (severity === "critical") {
-    return (
-      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-        style={{ backgroundColor: "rgba(248,113,113,0.12)", color: "#f87171" }}>
-        P1
-      </span>
-    );
-  }
-  if (severity === "warning") {
-    return (
-      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-        style={{ backgroundColor: "rgba(251,191,36,0.12)", color: "#fbbf24" }}>
-        P2
-      </span>
-    );
-  }
-  if (severity === "ok") {
-    return (
-      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-        style={{ backgroundColor: "rgba(74,222,128,0.12)", color: "#4ade80" }}>
-        P3
-      </span>
-    );
-  }
+  if (severity === "critical") return (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+      style={{ backgroundColor: "rgba(248,113,113,0.12)", color: "#f87171" }}>P1</span>
+  );
+  if (severity === "warning") return (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+      style={{ backgroundColor: "rgba(251,191,36,0.12)", color: "#fbbf24" }}>P2</span>
+  );
+  if (severity === "ok") return (
+    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+      style={{ backgroundColor: "rgba(74,222,128,0.12)", color: "#4ade80" }}>P3</span>
+  );
   return <span className="text-[10px]" style={{ color: "var(--muted)" }}>—</span>;
 }
 
@@ -89,6 +77,8 @@ function timeAgo(iso: string) {
   return `${Math.floor(secs / 86400)}d ago`;
 }
 
+const PAGE_SIZE = 5;
+
 interface Props {
   agentType?: string;
   refreshTrigger?: number;
@@ -97,6 +87,8 @@ interface Props {
 export default function ActionTrackerTable({ agentType, refreshTrigger }: Props) {
   const [rows, setRows] = useState<TrackedAction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [marking, setMarking] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -104,10 +96,7 @@ export default function ActionTrackerTable({ agentType, refreshTrigger }: Props)
         ? `/api/agent/actions?agent_type=${agentType}`
         : "/api/agent/actions";
       const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json() as TrackedAction[];
-        setRows(data);
-      }
+      if (res.ok) setRows(await res.json() as TrackedAction[]);
     } catch {
       // keep stale on network error
     } finally {
@@ -117,8 +106,30 @@ export default function ActionTrackerTable({ agentType, refreshTrigger }: Props)
 
   useEffect(() => {
     setLoading(true);
+    setPage(0);
     load();
   }, [load, refreshTrigger]);
+
+  async function markDone(id: string) {
+    setMarking(id);
+    try {
+      await fetch(`/api/agent/actions/${id}/complete`, { method: "PATCH" });
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === id
+            ? { ...r, status: "completed", completed_at: new Date().toISOString() }
+            : r
+        )
+      );
+    } catch {
+      // silently fail — status stays unchanged
+    } finally {
+      setMarking(null);
+    }
+  }
+
+  const totalPages = Math.ceil(rows.length / PAGE_SIZE);
+  const pageRows = rows.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <div className="flex flex-col gap-2">
@@ -144,72 +155,113 @@ export default function ActionTrackerTable({ agentType, refreshTrigger }: Props)
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--border)" }}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface2)" }}>
-                  {["Station", "Recommendation", "Priority", "Status", "System Actions Executed", "Updated"].map((h) => (
-                    <th key={h}
-                      className="text-left py-2 px-3 text-[10px] font-semibold uppercase tracking-wider"
-                      style={{ color: "var(--muted)" }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, i) => (
-                  <tr
-                    key={row.id}
-                    style={{
-                      borderBottom: i < rows.length - 1 ? "1px solid var(--border)" : undefined,
-                    }}>
-                    <td className="py-2.5 px-3 font-medium whitespace-nowrap" style={{ color: "var(--text)" }}>
-                      {row.station ?? "—"}
-                    </td>
-                    <td className="py-2.5 px-3" style={{ color: "var(--text)", maxWidth: 240 }}>
-                      <p className="text-xs leading-snug" style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}>
-                        {row.recommendation}
-                      </p>
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <PriorityBadge severity={row.severity} />
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap">
-                      <StatusBadge status={row.status} />
-                    </td>
-                    <td className="py-2.5 px-3">
-                      {row.actions_taken.length > 0 ? (
-                        <div className="flex flex-col gap-0.5">
-                          {row.actions_taken.map((a, idx) => (
-                            <span key={idx} className="text-[11px] flex items-start gap-1">
-                              <CheckCircle2 size={10} className="shrink-0 mt-0.5" style={{ color: "#4ade80" }} />
-                              <span style={{ color: "var(--text)" }}>{a}</span>
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span style={{ color: "var(--muted)" }}>—</span>
-                      )}
-                    </td>
-                    <td className="py-2.5 px-3 whitespace-nowrap" style={{ color: "var(--muted)" }}>
-                      <span className="flex items-center gap-1">
-                        <Clock size={10} />
-                        {timeAgo(row.completed_at ?? row.approved_at)}
-                      </span>
-                    </td>
+        <>
+          <div className="rounded-xl border overflow-hidden" style={{ borderColor: "var(--border)" }}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--border)", backgroundColor: "var(--surface2)" }}>
+                    {["Station", "Recommendation", "Pri", "Status", "System Actions", "Updated", ""].map((h) => (
+                      <th key={h}
+                        className="text-left py-2 px-3 text-[10px] font-semibold uppercase tracking-wider"
+                        style={{ color: "var(--muted)" }}>
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pageRows.map((row, i) => (
+                    <tr
+                      key={row.id}
+                      style={{ borderBottom: i < pageRows.length - 1 ? "1px solid var(--border)" : undefined }}>
+                      <td className="py-2.5 px-3 font-medium whitespace-nowrap" style={{ color: "var(--text)" }}>
+                        {row.station ?? "—"}
+                      </td>
+                      <td className="py-2.5 px-3" style={{ color: "var(--text)", maxWidth: 200 }}>
+                        <p className="text-xs leading-snug line-clamp-2">{row.recommendation}</p>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        <PriorityBadge severity={row.severity} />
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        <StatusBadge status={row.status} />
+                      </td>
+                      <td className="py-2.5 px-3" style={{ maxWidth: 180 }}>
+                        {row.actions_taken.length > 0 ? (
+                          <div className="flex flex-col gap-0.5">
+                            {row.actions_taken.map((a, idx) => (
+                              <span key={idx} className="text-[11px] flex items-start gap-1">
+                                <CheckCircle2 size={10} className="shrink-0 mt-0.5" style={{ color: "#4ade80" }} />
+                                <span style={{ color: "var(--text)" }}>{a}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ color: "var(--muted)" }}>—</span>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap" style={{ color: "var(--muted)" }}>
+                        <span className="flex items-center gap-1">
+                          <Clock size={10} />
+                          {timeAgo(row.completed_at ?? row.approved_at)}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        {row.status === "awaiting_human_action" && (
+                          <button
+                            onClick={() => markDone(row.id)}
+                            disabled={marking === row.id}
+                            className="text-[10px] font-semibold px-2 py-1 rounded-md transition-opacity disabled:opacity-50"
+                            style={{ backgroundColor: "rgba(74,222,128,0.12)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)" }}>
+                            {marking === row.id ? "…" : "Mark done"}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[10px]" style={{ color: "var(--muted)" }}>
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, rows.length)} of {rows.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="p-1 rounded disabled:opacity-30 transition-opacity"
+                  style={{ color: "var(--muted)" }}>
+                  <ChevronLeft size={13} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i)}
+                    className="w-5 h-5 rounded text-[10px] font-semibold transition-colors"
+                    style={{
+                      backgroundColor: page === i ? "#60a5fa" : "transparent",
+                      color: page === i ? "#000" : "var(--muted)",
+                    }}>
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page === totalPages - 1}
+                  className="p-1 rounded disabled:opacity-30 transition-opacity"
+                  style={{ color: "var(--muted)" }}>
+                  <ChevronRight size={13} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

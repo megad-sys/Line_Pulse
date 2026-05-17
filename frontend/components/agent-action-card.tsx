@@ -68,6 +68,11 @@ export default function AgentActionCard({ action, agentId, onApprove }: AgentAct
             bottleneck_score:   action.bottleneckScore,
             action_required:    action.actionRequired,
             recommended_action: action.recommendedAction,
+            checked:            action.checked,
+            found:              action.found,
+            why:                action.why,
+            handover_notes:     action.handoverNotes,
+            recommendation:     action.recommendation,
           },
         }),
       });
@@ -117,6 +122,11 @@ export default function AgentActionCard({ action, agentId, onApprove }: AgentAct
             bottleneck_score:   action.bottleneckScore,
             action_required:    action.actionRequired,
             recommended_action: action.recommendedAction,
+            checked:            action.checked,
+            found:              action.found,
+            why:                action.why,
+            handover_notes:     action.handoverNotes,
+            recommendation:     action.recommendation,
           },
         }),
       });

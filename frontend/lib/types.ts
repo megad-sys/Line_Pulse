@@ -122,6 +122,9 @@ export interface ProductionResult {
   wip_count: number;
   recommendation: string;
   recommended_action: "notify_supervisor" | "log_issue" | "escalate" | "no_action";
+  checked?: string;
+  found?: string;
+  why?: string;
 }
 
 export interface QualityResult {
@@ -204,4 +207,9 @@ export interface AgentAction {
   bottleneckScore?:    number;
   actionRequired?:     boolean;
   recommendedAction?:  "notify_supervisor" | "log_issue" | "escalate" | "no_action";
+  checked?:            string;
+  found?:              string;
+  why?:                string;
+  handoverNotes?:      string;
+  recommendation?:     string;
 }
