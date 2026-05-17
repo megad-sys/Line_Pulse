@@ -6,10 +6,11 @@ import type { AgentContext } from "../compute";
 
 const SYSTEM_PROMPT = `You are a production intelligence agent for a manufacturing shop floor.
 You receive production data that may come from any source — an MES integration, QR scan events, CSV import, or API feed. Treat all data the same regardless of origin.
-You are responsible for two things: (1) identifying the worst bottleneck on the floor, and (2) writing a concise shift briefing.
+You are responsible for two things: (1) identifying the worst bottleneck on the floor, and (2) writing a shift briefing that reads like a senior engineer wrote it.
 
 Before responding, reason through:
 - Which station has the highest bottleneck_score or the longest active stall?
+- What specific numbers tell the story? (cycle time vs target, WIP depth, stall duration)
 - What is the single most important action your team can take in the next 30 minutes?
 - What does the incoming shift need to know to avoid repeating today's problems?
 
@@ -28,7 +29,10 @@ Respond ONLY in JSON matching this schema exactly:
   "bottleneck_duration_mins": number | null,
   "wip_count": number,
   "recommendation": string,
-  "recommended_action": "notify_supervisor" | "log_issue" | "escalate" | "no_action"
+  "recommended_action": "notify_supervisor" | "log_issue" | "escalate" | "no_action",
+  "checked": string,
+  "found": string,
+  "why": string
 }
 
 Rules:
@@ -40,6 +44,9 @@ Rules:
 - bottleneck_score > 200 → severity "critical", > 150 → "warning", else "ok"
 - recommendation: one concrete sentence — name the exact station and what to do
 - recommended_action: critical or action_required true → "escalate", warning → "notify_supervisor", ok → "log_issue"
+- checked: list every metric and station you examined before deciding — e.g. "Cycle times at all 5 stations, WIP depth per station, active stall flags, plan attainment at the 4-hour mark."
+- found: the specific numbers that matter — e.g. "Visual Inspection at 14.8 min avg vs 6.4 min target (2.3×). 23 parts backed up. Stall active 22 min. Shift on pace for 90/150 units — 40% below plan."
+- why: one paragraph. Explain the logic: why this station, why this action, what happens if nothing changes, and why the recommended fix addresses it. Be concrete. No filler.
 
 Write like a senior floor manager. Direct, no jargon, no filler.
 Name exact stations, work orders, and operators where relevant.`;
@@ -48,20 +55,23 @@ Name exact stations, work orders, and operators where relevant.`;
 
 const ProductionSchema = z
   .object({
-    one_line_summary:        z.string(),
-    top_priority:            z.string(),
-    action_required:         z.boolean(),
-    handover_notes:          z.string(),
-    worst_station:           z.string(),
-    avg_cycle_mins:          z.number(),
-    target_cycle_mins:       z.number(),
-    bottleneck_score:        z.number(),
-    severity:                z.enum(["critical", "warning", "ok"]),
-    bottleneck_detected:     z.boolean(),
+    one_line_summary:         z.string(),
+    top_priority:             z.string(),
+    action_required:          z.boolean(),
+    handover_notes:           z.string(),
+    worst_station:            z.string(),
+    avg_cycle_mins:           z.number(),
+    target_cycle_mins:        z.number(),
+    bottleneck_score:         z.number(),
+    severity:                 z.enum(["critical", "warning", "ok"]),
+    bottleneck_detected:      z.boolean(),
     bottleneck_duration_mins: z.number().nullable(),
-    wip_count:               z.number(),
-    recommendation:          z.string(),
-    recommended_action:      z.enum(["notify_supervisor", "log_issue", "escalate", "no_action"]),
+    wip_count:                z.number(),
+    recommendation:           z.string(),
+    recommended_action:       z.enum(["notify_supervisor", "log_issue", "escalate", "no_action"]),
+    checked:                  z.string(),
+    found:                    z.string(),
+    why:                      z.string(),
   })
   .refine(
     (d) => {

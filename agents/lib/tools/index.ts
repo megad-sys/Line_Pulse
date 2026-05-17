@@ -62,7 +62,9 @@ export async function dispatchTool(
   args: Record<string, string>,
   integrations: EnabledIntegration[],
   tenantId: string,
-  shiftId?: string
+  shiftId?: string,
+  agentResult?: Record<string, unknown>,
+  approvedBy?: string
 ): Promise<ToolRunResult> {
   if (name === "log_issue") {
     const result = await runLogIssueTool({
@@ -91,6 +93,8 @@ export async function dispatchTool(
       severity:    args.severity ?? "warning",
       station:     args.station,
       shiftId:     args.shiftId ?? shiftId,
+      agentResult,
+      approvedBy,
     });
     return { tool: name, ...result };
   }

@@ -4,6 +4,8 @@ export type SlackToolInput = {
   severity: string;
   station?: string;
   shiftId?: string;
+  agentResult?: Record<string, unknown>;
+  approvedBy?: string;
 };
 
 export type SlackToolResult = {
@@ -11,6 +13,114 @@ export type SlackToolResult = {
   message: string;
   error?: string;
 };
+
+function buildBlocks(input: SlackToolInput): object[] {
+  const emoji =
+    input.severity === "critical" ? "🔴"
+    : input.severity === "warning" ? "🟡"
+    : "🟢";
+
+  const r = input.agentResult ?? {};
+  const station   = (r.worst_station  as string) ?? input.station ?? "Unknown";
+  const checked   = r.checked   as string | undefined;
+  const found     = r.found     as string | undefined;
+  const why       = r.why       as string | undefined;
+  const handover  = r.handover_notes as string | undefined;
+  const recommendation = (r.recommendation as string) ?? input.message;
+  const approvedBy = input.approvedBy ?? "operator";
+
+  const blocks: object[] = [
+    // Header
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: `${emoji} ${input.severity.toUpperCase()}  ·  ${station}`,
+        emoji: true,
+      },
+    },
+    {
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `*LinePulse Production Agent*  ·  Shift: ${input.shiftId ?? "N/A"}`,
+        },
+      ],
+    },
+    { type: "divider" },
+  ];
+
+  // What I checked
+  if (checked) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*What I checked*\n${checked}`,
+      },
+    });
+  }
+
+  // What I found
+  if (found) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*What I found*\n${found}`,
+      },
+    });
+  }
+
+  blocks.push({ type: "divider" });
+
+  // Recommendation
+  blocks.push({
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*Recommendation*\n${recommendation}`,
+    },
+  });
+
+  // Why
+  if (why) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Why*\n${why}`,
+      },
+    });
+  }
+
+  // Handover
+  if (handover) {
+    blocks.push({ type: "divider" });
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Shift handover*\n${handover}`,
+      },
+    });
+  }
+
+  // Footer
+  blocks.push({ type: "divider" });
+  blocks.push({
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: `Approved by: ${approvedBy}`,
+      },
+    ],
+  });
+
+  return blocks;
+}
 
 export async function runSlackTool(input: SlackToolInput): Promise<SlackToolResult> {
   if (!input.webhook_url) {
@@ -26,30 +136,15 @@ export async function runSlackTool(input: SlackToolInput): Promise<SlackToolResu
     : input.severity === "warning" ? "🟡"
     : "🟢";
 
+  const station = (input.agentResult?.worst_station as string) ?? input.station ?? "shop floor";
+
   try {
     const res = await fetch(input.webhook_url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        text: `${emoji} *LinePulse Alert*`,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `${emoji} *${input.severity.toUpperCase()}*\n${input.message}`,
-            },
-          },
-          {
-            type: "context",
-            elements: [
-              {
-                type: "mrkdwn",
-                text: `Station: ${input.station ?? "N/A"} | Shift: ${input.shiftId ?? "N/A"}`,
-              },
-            ],
-          },
-        ],
+        text: `${emoji} LinePulse · ${input.severity.toUpperCase()} · ${station}`,
+        blocks: buildBlocks(input),
       }),
     });
 

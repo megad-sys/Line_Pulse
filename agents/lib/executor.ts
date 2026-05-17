@@ -57,7 +57,7 @@ export async function runExecutor(input: ExecutorInput): Promise<ExecutorResult>
   // 5. Execute each routed tool
   const results = await Promise.all(
     routed.tools.map((toolName) =>
-      dispatchTool(toolName, toolArgs, integrations, input.tenantId, input.shiftId)
+      dispatchTool(toolName, toolArgs, integrations, input.tenantId, input.shiftId, input.agentResult, input.approvedBy)
     )
   );
 
